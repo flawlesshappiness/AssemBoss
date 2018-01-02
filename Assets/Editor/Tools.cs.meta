@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 692b8b1d1b067fd4787dbead40ec3435
+timeCreated: 1509905605
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - spDoor: {fileID: 21300000, guid: 0ea64949ebdfb304a9c5121c07a62532, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
