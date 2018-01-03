@@ -4,20 +4,30 @@ using UnityEngine;
 using System;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(PrefabManager))]
 public class DialogManager : MonoBehaviour {
 
-	public Text textTitle;
-	public Button buttonYes;
-	public Button buttonNo;
-	private static Text tTitle;
-	private static Button bYes;
-	private static Button bNo;
-	private static GameObject panel;
+	private PrefabManager mgPrefab;
+
+	private GameObject curPanel;
+	public GameObject background;
+
+	//YesNo
+	public GameObject panelYesNo;
+	public Text titleYesNo;
+	private Action aYes;
+	private Action aNo;
+
+	//Buttons
+	public GameObject panelButtons;
+	public Text titleButtons;
+	public GameObject layoutButtons;
+	private List<GameObject> buttons = new List<GameObject>();
 
 	//Awake
 	void Awake()
 	{
-		
+		mgPrefab = GetComponent<PrefabManager>();
 	}
 
 	// Use this for initialization
@@ -30,36 +40,72 @@ public class DialogManager : MonoBehaviour {
 		
 	}
 
-	public void Init()
-	{
-		if(tTitle == null) tTitle = textTitle;
-		if(bYes == null) bYes = buttonYes;
-		if(bNo == null) bNo = buttonNo;
-		if(panel == null) panel = gameObject;
-
-		Close();
-	}
-
-	public static void Display(string title, Action aYes, Action aNo)
+	#region YESNO
+	public void DisplayYesNo(string title, Action aYes, Action aNo)
 	{
 		//Title
-		tTitle.text = title;
+		titleYesNo.text = title;
 
-		//Buttons
-		bYes.onClick.RemoveAllListeners();
-		bNo.onClick.RemoveAllListeners();
-		bYes.onClick.AddListener(() => Close() );
-		bNo.onClick.AddListener(() => Close() );
-
-		bYes.onClick.AddListener(() => aYes() );
-		bNo.onClick.AddListener(() => aNo() );
+		//Actions
+		this.aYes = aYes;
+		this.aNo = aNo;
 
 		//Display
-		panel.SetActive(true);
+		Display(panelYesNo);
 	}
 
-	static void Close()
+	public void ClickButtonYes()
 	{
-		panel.SetActive(false);
+		Close();
+		aYes();
+	}
+
+	public void ClickButtonNo()
+	{
+		Close();
+		aNo();
+	}
+	#endregion
+
+	#region DROP
+	public void DisplayButtons(string title, List<string> options, Action<string> action)
+	{
+		//Title
+		titleButtons.text = title;
+
+		//Buttons
+		foreach(GameObject g in buttons) Destroy(g);
+		buttons.Clear();
+		foreach(string s in options)
+		{
+			var g = mgPrefab.SpawnPrefabUI("Button");
+			buttons.Add(g);
+			g.transform.SetParent(layoutButtons.transform);
+			g.transform.localScale = new Vector3(1f, 1f, 1f);
+			g.GetComponentInChildren<Text>().text = s;
+			g.GetComponent<Button>().onClick.AddListener(delegate {
+				action(s);
+				Close();
+			});
+		}
+
+		//Display
+		Display(panelButtons);
+	}
+	#endregion
+
+	void Display(GameObject panel)
+	{
+		if(curPanel != null) curPanel.SetActive(false);
+		curPanel = panel;
+		curPanel.SetActive(true);
+
+		background.SetActive(true);
+	}
+
+	void Close()
+	{
+		curPanel.SetActive(false);
+		background.SetActive(false);
 	}
 }

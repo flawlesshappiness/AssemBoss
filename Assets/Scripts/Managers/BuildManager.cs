@@ -3,29 +3,40 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
+using System.Linq;
 
+public enum AttackType { JUMP, PROJECTILE }
+
+[RequireComponent(typeof(PrefabManager))]
 public class BuildManager : MonoBehaviour {
 
 	public BossPicker bossPicker;
 	public PanelManager mgPanel;
+	public DialogManager mgDialog;
+	private PrefabManager mgPrefab;
 	private DataManager data;
 
 	private bool unsavedChanges = false;
 
 	//UI elements
 	public InputField inputField_name;
-	public Slider slider_health;
-	public Text text_health;
+	public InputField inputField_health;
 	public GameObject layout_attacks;
+
+	public GameObject layout_attack_keys;
+	public GameObject layout_attack_values;
 
 	//Attacks
 	private List<DataAttack> attacks;
 	private int attackCur;
+	private List<GameObject> attackKeyValueList = new List<GameObject>();
 
 	//Awake
 	void Awake()
 	{
 		data = GetComponent<DataManager>();
+		mgPrefab = GetComponent<PrefabManager>();
 	}
 
 	// Use this for initialization
@@ -41,15 +52,15 @@ public class BuildManager : MonoBehaviour {
 	public void LoadBoss(DataBoss boss)
 	{
 		inputField_name.text = boss.name;
-		slider_health.value = boss.health;
+		inputField_health.text = boss.health.ToString();
 
 		//Attacks
+		attacks = new List<DataAttack>();
 		if(boss.attacks != null && boss.attacks.Length > 0)
 		{
-			attacks = new List<DataAttack>(boss.attacks);
+			attacks.AddRange(boss.attacks);
 			attackCur = 0;
 			DisplayAttack(attacks[attackCur]);
-
 		}
 		else
 		{
@@ -67,7 +78,7 @@ public class BuildManager : MonoBehaviour {
 			return;
 		}
 
-		DialogManager.Display(
+		mgDialog.DisplayYesNo(
 			"Do you want to save?",
 			delegate {
 				bossPicker.DeleteBoss();
@@ -75,7 +86,7 @@ public class BuildManager : MonoBehaviour {
 				mgPanel.Back();
 			},
 			delegate {
-				DialogManager.Display("Are you sure?",
+				mgDialog.DisplayYesNo("Are you sure?",
 					delegate {
 						mgPanel.Back();
 					},
@@ -88,9 +99,87 @@ public class BuildManager : MonoBehaviour {
 	}
 
 	#region ATTACKS
+	private enum AttackValueType { STRING, INT }
+
 	public void NewAttack()
 	{
-		//attacks.Add(new DataAttack());
+		var list = Enum.GetNames(typeof(AttackType)).ToList();
+		mgDialog.DisplayButtons("Pick attack type.",
+			list,
+			AddAttack
+		);
+	}
+
+	void AddAttack(string type)
+	{
+		DataAttack da = null;
+		switch(type)
+		{
+		case "JUMP":
+			da = new DataAttackJump();
+			break;
+		case "PROJECTILE":
+			da = new DataAttackShoot();
+			break;
+		default:
+			break;
+		}
+
+		da.type = type;
+		attacks.Add(da);
+		attackCur = attacks.Count - 1;
+		DisplayAttack(attacks[attackCur]);
+	}
+
+	void AddAttackKey(GameObject g)
+	{
+		g.transform.SetParent(layout_attack_keys.transform);
+		g.transform.localScale = new Vector3(1f, 1f, 1f);
+		attackKeyValueList.Add(g);
+	}
+
+	void AddAttackValue(GameObject g)
+	{
+		g.transform.SetParent(layout_attack_values.transform);
+		g.transform.localScale = new Vector3(1f, 1f, 1f);
+		attackKeyValueList.Add(g);
+	}
+
+	void ClearAttackKeyValue()
+	{
+		foreach(GameObject g in attackKeyValueList)
+		{
+			Destroy(g);
+		}
+		attackKeyValueList.Clear();
+	}
+
+	GameObject SpawnInputField(string value, AttackValueType type)
+	{
+		GameObject g = mgPrefab.SpawnPrefabUI("InputField");
+		var t = g.GetComponent<InputField>();
+		t.text = value;
+
+		if(type == AttackValueType.INT) t.contentType = InputField.ContentType.IntegerNumber;
+		else if(type == AttackValueType.STRING) t.contentType = InputField.ContentType.Standard;
+
+		return g;
+	}
+
+	GameObject SpawnText(string text)
+	{
+		var g = mgPrefab.SpawnPrefabUI("Text");
+		var t = g.GetComponent<Text>();
+		t.text = text;
+		return g;
+	}
+
+	public void DeleteAttack()
+	{
+		var attack = attacks[attackCur];
+		attacks.Remove(attack);
+		if(attacks.Count <= 0) DisplayAttack(null);
+		else DisplayAttack(attacks[--attackCur]);
 	}
 
 	public void DisplayAttack(DataAttack da)
@@ -103,7 +192,21 @@ public class BuildManager : MonoBehaviour {
 		{
 			layout_attacks.SetActive(true);
 			var type = da.GetType();
-			print(type);
+
+			ClearAttackKeyValue();
+			//Keys and values
+			AddAttackKey(SpawnText("Type:"));
+			AddAttackValue(SpawnText(da.type));
+			AddAttackKey(SpawnText("Name:"));
+			AddAttackValue(SpawnInputField("Attack Name", AttackValueType.STRING));
+			if(type == typeof(DataAttackJump))
+			{
+				
+			}
+			else if(type == typeof(DataAttackShoot))
+			{
+				
+			}
 		}
 	}
 
@@ -122,7 +225,9 @@ public class BuildManager : MonoBehaviour {
 	{
 		DataBoss boss = new DataBoss();
 		boss.name = inputField_name.text;
-		boss.health = (int)slider_health.value;
+		boss.health = int.Parse(inputField_health.text);
+
+		boss.attacks = attacks.ToArray();
 
 		string path = Paths.GetBossDirectory();
 		if(!Directory.Exists(path)) Directory.CreateDirectory(path);
@@ -133,11 +238,6 @@ public class BuildManager : MonoBehaviour {
 	public void OnValueChanged()
 	{
 		unsavedChanges = true;
-	}
-
-	public void UpdateTextHealth()
-	{
-		text_health.text = "" + slider_health.value;
 	}
 	#endregion
 }

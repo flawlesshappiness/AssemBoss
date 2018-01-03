@@ -74,6 +74,7 @@ public class DataBoss : DataObject {
 [Serializable]
 public abstract class DataAttack {
 	public string name { get; set; }
+	public string type { get; set; }
 	public float timeStart { get; set; }
 	public float timeEnd { get; set; }
 }

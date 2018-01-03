@@ -5,14 +5,13 @@ using UnityEngine;
 public class PanelManager : MonoBehaviour {
 
 	public Panel initPanel;
-	public DialogManager mgDialog;
 	private Stack<Panel> panels = new Stack<Panel>();
 	private Panel pCur;
 
 	//Awake
 	void Awake()
 	{
-		mgDialog.Init();
+		
 	}
 
 	// Use this for initialization
