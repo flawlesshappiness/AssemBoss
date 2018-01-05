@@ -17,6 +17,7 @@ public class BossPicker : MonoBehaviour {
 
 	//UI elements
 	public GameObject layoutDisplay;
+
 	public Button bEdit;
 	public Button bDelete;
 	public Button bFight;

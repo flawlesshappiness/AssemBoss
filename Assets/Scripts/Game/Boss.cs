@@ -16,6 +16,8 @@ public class Boss : MonoBehaviour {
 	private bool enabled;
 	private new string name;
 
+	private List<BossAttack> attacks = new List<BossAttack>();
+
 	//Awake
 	void Awake()
 	{
@@ -39,6 +41,7 @@ public class Boss : MonoBehaviour {
 		this.mgLevel = mgLevel;
 		this.mgParticle = mgParticle;
 		enabled = true;
+		NextAttack();
 	}
 
 	public void OnDamage()
@@ -53,4 +56,17 @@ public class Boss : MonoBehaviour {
 
 		mgLevel.BossDeath();
 	}
+
+	#region ATTACKS
+	public void AddAttack(BossAttack attack)
+	{
+		attacks.Add(attack);
+	}
+
+	public void NextAttack()
+	{
+		var attack = attacks[Random.Range(0, attacks.Count)];
+		attack.Enable();
+	}
+	#endregion
 }

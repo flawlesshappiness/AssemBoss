@@ -6,7 +6,7 @@ public class JumpManager : MonoBehaviour {
 
 	public Collider2D bottomCollider;
 
-	private enum JumpState { JUMPING, FALLING, GROUNDED, DAMAGED }
+	public enum JumpState { JUMPING, FALLING, GROUNDED, DAMAGED }
 	private JumpState state = JumpState.FALLING;
 
 	//Times
@@ -101,5 +101,10 @@ public class JumpManager : MonoBehaviour {
 	{
 		cdHitTime = Time.time + cdbHitTime;
 		state = JumpState.DAMAGED;
+	}
+
+	public JumpState GetState()
+	{
+		return state;
 	}
 }

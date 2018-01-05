@@ -18,6 +18,7 @@ public class BuildManager : MonoBehaviour {
 	private DataManager data;
 
 	private bool unsavedChanges = false;
+	private DataBoss boss;
 
 	//UI elements
 	public InputField inputField_name;
@@ -26,6 +27,7 @@ public class BuildManager : MonoBehaviour {
 
 	public GameObject layout_attack_keys;
 	public GameObject layout_attack_values;
+	public GameObject list_attacks;
 
 	//Attacks
 	private List<DataAttack> attacks;
@@ -51,6 +53,7 @@ public class BuildManager : MonoBehaviour {
 
 	public void LoadBoss(DataBoss boss)
 	{
+		this.boss = boss;
 		inputField_name.text = boss.name;
 		inputField_health.text = boss.health.ToString();
 
@@ -98,8 +101,48 @@ public class BuildManager : MonoBehaviour {
 		);
 	}
 
+	#region UI
+	GameObject SpawnInputField(string value, AttackValueType type)
+	{
+		GameObject g = mgPrefab.SpawnPrefabUI("InputField");
+		var t = g.GetComponent<InputField>();
+		t.text = value;
+
+		if(type == AttackValueType.INT) t.contentType = InputField.ContentType.IntegerNumber;
+		else if(type == AttackValueType.STRING) t.contentType = InputField.ContentType.Standard;
+
+		return g;
+	}
+
+	GameObject SpawnText(string text)
+	{
+		var g = mgPrefab.SpawnPrefabUI("Text");
+		var t = g.GetComponent<Text>();
+		t.text = text;
+		return g;
+	}
+
+	GameObject SpawnButton(string text)
+	{
+		var g = mgPrefab.SpawnPrefabUI("Button");
+		var t = g.GetComponentInChildren<Text>();
+		t.text = text;
+		return g;
+	}
+	#endregion
+
 	#region ATTACKS
 	private enum AttackValueType { STRING, INT }
+
+	public void LoadAttacks()
+	{
+		foreach(DataAttack da in attacks)
+		{
+			var g = SpawnButton(da.name);
+			g.transform.SetParent(list_attacks.transform);
+			g.transform.localScale = new Vector3(1f, 1f, 1f);
+		}
+	}
 
 	public void NewAttack()
 	{
@@ -154,26 +197,6 @@ public class BuildManager : MonoBehaviour {
 		attackKeyValueList.Clear();
 	}
 
-	GameObject SpawnInputField(string value, AttackValueType type)
-	{
-		GameObject g = mgPrefab.SpawnPrefabUI("InputField");
-		var t = g.GetComponent<InputField>();
-		t.text = value;
-
-		if(type == AttackValueType.INT) t.contentType = InputField.ContentType.IntegerNumber;
-		else if(type == AttackValueType.STRING) t.contentType = InputField.ContentType.Standard;
-
-		return g;
-	}
-
-	GameObject SpawnText(string text)
-	{
-		var g = mgPrefab.SpawnPrefabUI("Text");
-		var t = g.GetComponent<Text>();
-		t.text = text;
-		return g;
-	}
-
 	public void DeleteAttack()
 	{
 		var attack = attacks[attackCur];
@@ -201,11 +224,11 @@ public class BuildManager : MonoBehaviour {
 			AddAttackValue(SpawnInputField("Attack Name", AttackValueType.STRING));
 			if(type == typeof(DataAttackJump))
 			{
-				
+				//Add values for jump attack
 			}
 			else if(type == typeof(DataAttackShoot))
 			{
-				
+				//Add values for projectile attack
 			}
 		}
 	}
@@ -223,15 +246,22 @@ public class BuildManager : MonoBehaviour {
 	#region SAVE
 	public void Save()
 	{
-		DataBoss boss = new DataBoss();
+		//Save boss values
 		boss.name = inputField_name.text;
 		boss.health = int.Parse(inputField_health.text);
 
-		boss.attacks = attacks.ToArray();
+		//Save attacks
+		SaveAttacks();
 
 		string path = Paths.GetBossDirectory();
 		if(!Directory.Exists(path)) Directory.CreateDirectory(path);
 		data.SaveToFile(boss, path + "/" + boss.name + ".boss");
+	}
+
+	void SaveAttacks()
+	{
+		
+		boss.attacks = attacks.ToArray();
 	}
 	#endregion
 	#region ONVALUECHANGED

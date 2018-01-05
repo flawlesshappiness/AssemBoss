@@ -72,8 +72,14 @@ public class LevelManager : MonoBehaviour {
 		var g = mgPrefab.SpawnPrefabGame("Boss");
 		var b = g.GetComponent<Boss>();
 
-		//Build
+		//Build stats
 		b.GetComponent<Health>().Set(data.health);
+
+		//Build attacks
+		foreach(DataAttack da in data.attacks)
+		{
+			b.AddAttack(da.AddComponent(g));
+		}
 
 		return b;
 	}

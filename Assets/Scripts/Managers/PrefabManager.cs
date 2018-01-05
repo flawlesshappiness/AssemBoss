@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PrefabManager : MonoBehaviour {
 
@@ -23,4 +24,43 @@ public class PrefabManager : MonoBehaviour {
 	{
 		return GameObject.Instantiate(Resources.Load("Prefabs/UI/"+prefab)) as GameObject;
 	}
+
+	#region UI
+	public GameObject SpawnInputField(string value, InputField.ContentType type)
+	{
+		GameObject g = SpawnPrefabUI("InputField");
+		var t = g.GetComponent<InputField>();
+		t.text = value;
+		t.contentType = type;
+
+		return g;
+	}
+
+	public GameObject SpawnText(string text)
+	{
+		var g = SpawnPrefabUI("Text");
+		var t = g.GetComponent<Text>();
+		t.text = text;
+		return g;
+	}
+
+	public GameObject SpawnButton(string text)
+	{
+		var g = SpawnPrefabUI("Button");
+		var t = g.GetComponentInChildren<Text>();
+		t.text = text;
+		return g;
+	}
+
+	public GameObject SpawnSlider(float minVal, float maxVal, float val)
+	{
+		var g = SpawnPrefabUI("Slider");
+		var s = g.GetComponent<Slider>();
+		s.minValue = minVal;
+		s.maxValue = maxVal;
+		s.value = val;
+		s.wholeNumbers = false;
+		return g;
+	}
+	#endregion
 }

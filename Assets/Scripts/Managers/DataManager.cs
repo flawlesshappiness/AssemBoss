@@ -48,7 +48,7 @@ public class DataManager : MonoBehaviour {
 
 	public void DeleteFile(string path)
 	{
-		File.Delete(path);
+		if(File.Exists(path)) File.Delete(path);
 	}
 }
 
@@ -68,6 +68,11 @@ public class DataBoss : DataObject {
 	{
 		
 	}
+
+	public string GetPath()
+	{
+		return Paths.GetBossDirectory() + "/" + name + ".boss";
+	}
 }
 
 #region DATA ATTACK
@@ -77,6 +82,13 @@ public abstract class DataAttack {
 	public string type { get; set; }
 	public float timeStart { get; set; }
 	public float timeEnd { get; set; }
+
+	public DataAttack ()
+	{
+		name = "New attack";
+	}
+
+	public abstract BossAttack AddComponent(GameObject g);
 }
 
 [Serializable]
@@ -84,12 +96,32 @@ public class DataAttackJump : DataAttack {
 	public float jumpSpeed { get; set; }
 	public float fallSpeed { get; set; }
 	public float jumpTime { get; set; }
+
+	public DataAttackJump ()
+	{
+		jumpSpeed = 0.07f;
+		fallSpeed = 0.06f;
+		jumpTime = 0.7f;
+	}
+
+	public override BossAttack AddComponent (GameObject g)
+	{
+		var c = g.AddComponent<BossAttackJump>();
+		c.data = this;
+		return c;
+	}
 }
 
 [Serializable]
 public class DataAttackShoot : DataAttack {
 	public DataProjectile[] projectiles { get; set; }
 	public float spawnSpeed { get; set; }
+
+	public override BossAttack AddComponent (GameObject g)
+	{
+		var c = g.AddComponent<BossAttackJump>();
+		return c;
+	}
 }
 #endregion
 
