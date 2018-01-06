@@ -5,6 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(Health))]
 [RequireComponent(typeof(MovementManager))]
 [RequireComponent(typeof(SpriteManager))]
+[RequireComponent(typeof(PrefabManager))]
 public class Boss : MonoBehaviour {
 
 	private Health health;
@@ -12,6 +13,7 @@ public class Boss : MonoBehaviour {
 	private MovementManager mgMovement;
 	private LevelManager mgLevel;
 	private ParticleManager mgParticle;
+	private Player player;
 
 	private bool enabled;
 	private new string name;
@@ -65,8 +67,23 @@ public class Boss : MonoBehaviour {
 
 	public void NextAttack()
 	{
-		var attack = attacks[Random.Range(0, attacks.Count)];
-		attack.Enable();
+		if(attacks.Count > 0)
+		{
+			var attack = attacks[Random.Range(0, attacks.Count)];
+			attack.Enable();
+		}
 	}
 	#endregion
+
+	public Player GetPlayer()
+	{
+		return mgLevel.GetPlayer();
+	}
+
+	public Direction GetDirectionToPlayer()
+	{
+		var ppos = mgLevel.GetPlayerPosition();
+		var pos = transform.position;
+		return (ppos.x > pos.x) ? Direction.RIGHT : Direction.LEFT;
+	}
 }

@@ -34,4 +34,9 @@ public class M {
 		var random = new System.Random();
 		return (T)values.GetValue(random.Next(values.Length));
 	}
+
+	public static List<string> GetListOfEnum(System.Type type)
+	{
+		return Enum.GetNames(type).ToList();
+	}
 }

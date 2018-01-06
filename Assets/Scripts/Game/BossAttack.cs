@@ -3,27 +3,70 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class BossAttack : MonoBehaviour {
-	public enum State { STARTING, ENABLED, ENDING }
-	public State state;
+	private enum State { STARTING, ACTIVE, ENDING }
+	private State state;
+	private bool active;
+	private float cdWait;
 
-	private bool enabled = false;
+	public DataAttack data;
+	public Boss boss;
+
+	public PrefabManager mgPrefab;
+	public JumpManager mgJump;
+	public MovementManager mgMovement;
+
+	//Awake
+	void Awake()
+	{
+		boss = GetComponent<Boss>();
+		mgJump = GetComponent<JumpManager>();
+		mgMovement = GetComponent<MovementManager>();
+		mgPrefab = GetComponent<PrefabManager>();
+	}
 
 	void Update()
 	{
-		if(!enabled) return;
-		UpdateEnabled();
+		if(!active) return;
+		if(Time.time > cdWait)
+		{
+			if(state == State.STARTING)
+			{
+				cdWait = Time.time + data.timeStart;
+				SetState(State.ACTIVE);
+			}
+			else if(state == State.ACTIVE)
+			{
+				UpdateEnabled();
+			}
+			else if(state == State.ENDING)
+			{
+				NextAttack();
+			}
+		}
+	}
+
+	void SetState(State state)
+	{
+		this.state = state;
 	}
 
 	public void Enable()
 	{
-		this.enabled = true;
-		state = State.STARTING;
+		SetState(State.STARTING);
 		Init();
+		active = true;
 	}
 
-	public void Disable()
+	void NextAttack()
 	{
-		this.enabled = false;
+		active = false;
+		boss.NextAttack();
+	}
+
+	public void EndAttack()
+	{
+		SetState(State.ENDING);
+		cdWait = Time.time + data.timeEnd;
 	}
 
 	public abstract void Init();

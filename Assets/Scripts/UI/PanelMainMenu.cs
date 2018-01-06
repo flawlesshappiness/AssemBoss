@@ -61,14 +61,19 @@ public class PanelMainMenu : MonoBehaviour {
 
 	void EditBoss(DataBoss boss)
 	{
-		mgPanel.Forward(panelBuild);
 		mgEditBoss.LoadBoss(boss, BuildState.EDIT);
+		mgPanel.Forward(panelBuild);
 	}
 
 	public void CreateBoss()
 	{
-		mgPanel.Forward(panelBuild);
 		mgEditBoss.LoadBoss(new DataBoss(), BuildState.CREATE);
+		mgPanel.Forward(panelBuild);
+	}
+
+	public void QuitGame()
+	{
+		Application.Quit();
 	}
 
 	List<DialogManager.ListItem> GetBossItemList()

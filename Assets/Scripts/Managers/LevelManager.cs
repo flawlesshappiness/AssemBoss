@@ -1,18 +1,32 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(ParticleManager))]
 [RequireComponent(typeof(PrefabManager))]
 public class LevelManager : MonoBehaviour {
 
+	private enum State { IDLE, SETUP, PLAYING, ENDING }
+	private State state;
+
+	public PanelManager mgPanel;
+
 	public Transform spawnPlayer;
 	public Transform spawnBoss;
 
+	//UI
+	public Text textEnd;
+
+	//Privates
 	private PrefabManager mgPrefab;
 	private ParticleManager mgParticle;
 	private Player player;
 	private Boss boss;
+
+	private float cdEnd;
+	private float cdbEnd = 2f;
+	private bool fightEnd = false;
 
 	//Awake
 	void Awake()
@@ -28,11 +42,29 @@ public class LevelManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
+		if(state == State.SETUP)
+		{
+
+		}
+		else if(state == State.PLAYING)
+		{
+
+		}
+		else if(state == State.ENDING)
+		{
+			if(Time.time > cdEnd)
+			{
+				StopLevel();
+				state = State.IDLE;
+			}
+		}
 	}
 
 	public void StartLevel(DataBoss db)
 	{
+		state = State.SETUP;
+		fightEnd = false;
+
 		//Spawn boss
 		boss = BuildBoss(db);
 		boss.transform.position = spawnBoss.position;
@@ -45,6 +77,8 @@ public class LevelManager : MonoBehaviour {
 		//Enable
 		player.EnablePlayer(this, mgParticle);
 		boss.EnableBoss(this, mgParticle);
+
+		state = State.PLAYING;
 	}
 
 	public void StopLevel()
@@ -54,16 +88,35 @@ public class LevelManager : MonoBehaviour {
 
 		Destroy(boss.gameObject);
 		boss = null;
+
+		textEnd.color = Color.clear;
+		mgPanel.Back();
 	}
 
 	public void PlayerDeath()
 	{
-
+		if(!fightEnd)
+		{
+			textEnd.text = "DEFEAT";
+			End();
+		}
 	}
 
 	public void BossDeath()
 	{
+		if(!fightEnd)
+		{
+			textEnd.text = "VICTORY";
+			End();
+		}
+	}
 
+	void End()
+	{
+		fightEnd = true;
+		textEnd.color = Color.white;
+		state = State.ENDING;
+		cdEnd = Time.time + cdbEnd;
 	}
 
 	Boss BuildBoss(DataBoss data)
@@ -82,5 +135,25 @@ public class LevelManager : MonoBehaviour {
 		}
 
 		return b;
+	}
+
+	public void GiveUp()
+	{
+		StopLevel();
+	}
+
+	public Vector3 GetPlayerPosition()
+	{
+		return player.transform.position;
+	}
+
+	public Vector3 GetBossPosition()
+	{
+		return boss.transform.position;
+	}
+
+	public Player GetPlayer()
+	{
+		return player;
 	}
 }

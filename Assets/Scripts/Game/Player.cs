@@ -21,13 +21,12 @@ public class Player : MonoBehaviour {
 
 	//Invincibility
 	private float cdInv;
-	public float cdbInv = 1f;
 	private Lerp<float> lerpInv;
 	private Lerp<float> lerpInvDone;
 
 	//Stun
 	private float cdStun;
-	public float cdbStun = 0.5f;
+	private float cdbStun;
 	private Direction stunMoveDirection = Direction.NONE;
 
 	//Awake
@@ -39,7 +38,9 @@ public class Player : MonoBehaviour {
 		mgSprite = GetComponent<SpriteManager>();
 		health = GetComponent<Health>();
 
-		lerpInv = Lerp.Get(cdbInv, 0.1f, 0.7f);
+		cdbStun = health.cdbHit * 0.6f;
+		mgJump.cdbHitTime = health.cdbHit * 0.25f;
+		lerpInv = Lerp.Get(health.cdbHit, 0.1f, 0.7f);
 		lerpInvDone = Lerp.Get(0f, 1f, 1f);
 
 		SetControls();
@@ -121,9 +122,8 @@ public class Player : MonoBehaviour {
 	#region DAMAGE
 	public void OnDamage()
 	{
-		if(!Invincible() && health.Alive())
+		if(health.Alive())
 		{
-			cdInv = Time.time + cdbInv; //Set invincibility
 			Stun(health.GetHitDirection()); //Stun player
 			mgJump.OnDamaged(); //Cause hit jump
 
@@ -134,13 +134,10 @@ public class Player : MonoBehaviour {
 
 	public void OnDeath()
 	{
+		mgParticle.SpawnParticle(2f, "PlayerExplode", transform.position);
+		gameObject.SetActive(false);
+
 		mgLevel.PlayerDeath();
-	}
-	#endregion
-	#region INVINCIBILITY
-	public bool Invincible()
-	{
-		return Time.time < cdInv;
 	}
 	#endregion
 	#region CONTROLS

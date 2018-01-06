@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
+using System.Linq;
 
 public class PrefabManager : MonoBehaviour {
 
@@ -61,6 +63,19 @@ public class PrefabManager : MonoBehaviour {
 		s.value = val;
 		s.wholeNumbers = false;
 		return g;
+	}
+
+	public GameObject SpawnDropdown(List<string> options, int value)
+	{
+		var g = SpawnPrefabUI("Dropdown");
+		var d = g.GetComponent<Dropdown>();
+		d.AddOptions(options);
+		return g;
+	}
+
+	public GameObject SpawnDropdown(System.Type enumType, int value)
+	{
+		return SpawnDropdown(M.GetListOfEnum(enumType), value);
 	}
 	#endregion
 }

@@ -13,16 +13,16 @@ public enum BuildState { EDIT, CREATE };
 public class PanelEditBoss : MonoBehaviour {
 
 	//Managers
-	private DataManager mgData;
-	private PrefabManager mgPrefab;
+	public DataManager mgData;
+	public PrefabManager mgPrefab;
 	public DialogManager mgDialog;
 	public PanelManager mgPanel;
 	public PanelEditAttack mgEditAttack;
 
 	//UI
 	public Panel panelEditAttack;
-	public GameObject layoutKeys;
 	public GameObject layoutValues;
+	public GameObject layoutAttackList;
 
 	//Privates
 	private DataBoss saveBoss; //Boss that might be saved
@@ -31,6 +31,7 @@ public class PanelEditBoss : MonoBehaviour {
 
 	private BuildState state;
 	private List<DataAttack> attacks = new List<DataAttack>();
+	private List<GameObject> listAttacks = new List<GameObject>();
 	private List<GameObject> listKeyValue = new List<GameObject>();
 
 	//AttackSelection
@@ -59,29 +60,53 @@ public class PanelEditBoss : MonoBehaviour {
 		this.state = state;
 
 		//Create Key&Values
+		ClearAttackKeyValue();
+
 		saveActions.Clear();
 		var kvName = mgPrefab.SpawnInputField(boss.name, InputField.ContentType.Standard);
 		saveActions.Add(delegate(DataBoss obj) { obj.name = kvName.GetComponent<InputField>().text; });
-		var kvHealth = mgPrefab.SpawnInputField(boss.health.ToString(), InputField.ContentType.IntegerNumber);
-		saveActions.Add(delegate(DataBoss obj) { obj.health = int.Parse(kvHealth.GetComponent<InputField>().text); });
-
-		//Add Key&Values
-		ClearAttackKeyValue();
 		AddKeyValue("Name:", kvName);
+
+		var kvHealth = mgPrefab.SpawnInputField(boss.health.ToString(), InputField.ContentType.IntegerNumber);
+		saveActions.Add(delegate(DataBoss obj) { obj.health = GetInputFieldValueInt(kvHealth); });
 		AddKeyValue("Health:", kvHealth);
 
 		//Attacks
 		attacks = new List<DataAttack>();
-		if(boss.attacks != null && boss.attacks.Length > 0)
+		if(boss.attacks != null && boss.attacks.Length > 0) attacks.AddRange(boss.attacks);
+	}
+
+	#region ATTACKS
+	public void UpdateAttackList()
+	{
+		ClearAttacksList();
+		foreach(DataAttack attack in attacks)
 		{
-			attacks.AddRange(boss.attacks);
+			AddAttackToList(attack.name);
 		}
 	}
 
+	void AddAttackToList(string name)
+	{
+		var g = mgPrefab.SpawnText(name);
+		g.transform.SetParent(layoutAttackList.transform);
+		g.transform.localScale = new Vector3(1f, 1f, 1f);
+		listAttacks.Add(g);
+	}
+
+	void ClearAttacksList()
+	{
+		foreach(GameObject g in listAttacks)
+		{
+			Destroy(g);
+		}
+		listAttacks.Clear();
+	}
+	#endregion
 	#region KEYS & VALUES
 	void AddKeyValue(string keyText, GameObject valueObject)
 	{
-		AddChildToLayout(mgPrefab.SpawnText(keyText), layoutKeys);
+		AddChildToLayout(mgPrefab.SpawnText(keyText), layoutValues);
 		AddChildToLayout(valueObject, layoutValues);
 	}
 
@@ -101,7 +126,22 @@ public class PanelEditBoss : MonoBehaviour {
 		listKeyValue.Clear();
 	}
 	#endregion
+	#region PARSING
+	float GetInputFieldValueFloat(GameObject g)
+	{
+		var ip = g.GetComponent<InputField>();
+		if(ip.text == "") return 0f;
+		else return float.Parse(ip.text);
+	}
 
+	int GetInputFieldValueInt(GameObject g)
+	{
+		var ip = g.GetComponent<InputField>();
+		if(ip.text == "") return 0;
+		else return int.Parse(ip.text);
+	}
+	#endregion
+	#region BUTTONS
 	public void CreateAttack()
 	{
 		var list = Enum.GetNames(typeof(AttackType)).ToList();
@@ -155,8 +195,14 @@ public class PanelEditBoss : MonoBehaviour {
 
 	public void DeleteBoss()
 	{
-		mgData.DeleteFile(boss.GetPath());
-		mgPanel.Back();
+		mgDialog.DisplayYesNo("Are you sure?",
+			delegate {
+				mgPanel.Back();
+				mgData.DeleteFile(boss.GetPath());
+			},
+			delegate {
+
+			});
 	}
 
 	public void SaveAndBack()
@@ -214,6 +260,7 @@ public class PanelEditBoss : MonoBehaviour {
 		b.attacks = attacks.ToArray();
 		return b;
 	}
+	#endregion
 
 	List<DialogManager.ListItem> GetAttackItemList()
 	{

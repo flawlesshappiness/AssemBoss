@@ -1,11 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 [RequireComponent(typeof(Collider2D))]
 public class CollisionDamage : MonoBehaviour {
 
 	public int damage = 1;
+	public UnityEvent onHitPlayer;
+	public UnityEvent onHitWall;
 
 	// Use this for initialization
 	void Start () {
@@ -29,6 +32,11 @@ public class CollisionDamage : MonoBehaviour {
 			var h = c.GetComponent<Health>();
 			h.SetHitDirection(GetHitDirection(c.transform.position));
 			h.Decrease(damage);
+			onHitPlayer.Invoke();
+		}
+		else if(c.tag == "Wall")
+		{
+			onHitWall.Invoke();
 		}
 	}
 

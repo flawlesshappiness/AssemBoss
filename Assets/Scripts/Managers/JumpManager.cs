@@ -15,11 +15,14 @@ public class JumpManager : MonoBehaviour {
 	//Speeds
 	public float fallSpeed = 0.2f;
 	public float jumpSpeed = 0.1f;
+	public float jumpToFallSpeed = 0.01f;
+	private float curSpeed;
 
 	//Cooldowns
 	private float cdJump; //Jump cooldown
 	private float cdbJump = 0.1f; //Base jump cooldown
 	private float cdHitTime; //Hit cooldown
+	[HideInInspector]
 	public float cdbHitTime = 2f; //Base hit cooldown
 
 	//Jump
@@ -68,6 +71,7 @@ public class JumpManager : MonoBehaviour {
 
 	void Jump()
 	{
+		curSpeed = jumpSpeed;
 		cdJump = Time.time + cdbJump;
 		jumpEnd = Time.time + jumpTime;
 		state = JumpState.JUMPING;
@@ -75,13 +79,16 @@ public class JumpManager : MonoBehaviour {
 
 	void MoveUp()
 	{
-		transform.position += new Vector3(0f, jumpSpeed, 0f);
+		transform.position += new Vector3(0f, curSpeed * Time.deltaTime, 0f);
 	}
 
 	void Fall()
 	{
+		if(curSpeed > fallSpeed) curSpeed -= jumpToFallSpeed;
+		else curSpeed = fallSpeed;
+
 		holdingJump = false;
-		transform.position -= new Vector3(0f, fallSpeed, 0f);
+		transform.position += new Vector3(0f, curSpeed * Time.deltaTime, 0f);
 	}
 
 	bool IsGrounded()
@@ -99,6 +106,7 @@ public class JumpManager : MonoBehaviour {
 
 	public void OnDamaged()
 	{
+		curSpeed = jumpSpeed;
 		cdHitTime = Time.time + cdbHitTime;
 		state = JumpState.DAMAGED;
 	}

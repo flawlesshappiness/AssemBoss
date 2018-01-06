@@ -8,7 +8,7 @@ public class Health : MonoBehaviour {
 	public int health = 1;
 	private Direction hitDir = Direction.NONE;
 	private float cdHit; //Cooldown before next hit
-	private float cdbHit = 0.1f; //Base cooldown before next hit
+	public float cdbHit = 0.1f; //Base cooldown before next hit
 
 	public UnityEvent onDamage;
 	public UnityEvent onDeath;
@@ -37,6 +37,8 @@ public class Health : MonoBehaviour {
 		{
 			onDamage.Invoke();
 		}
+
+		print(name + " took " + amount + " damage");
 	}
 
 	public void Set(int amount)

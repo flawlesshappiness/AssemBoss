@@ -96,12 +96,16 @@ public class DataAttackJump : DataAttack {
 	public float jumpSpeed { get; set; }
 	public float fallSpeed { get; set; }
 	public float jumpTime { get; set; }
+	public float moveSpeed { get; set; }
+	public string approachToPlayer { get; set; }
 
 	public DataAttackJump ()
 	{
 		jumpSpeed = 0.07f;
-		fallSpeed = 0.06f;
-		jumpTime = 0.7f;
+		fallSpeed = 6f;
+		jumpTime = 5f;
+		moveSpeed = 0.05f;
+		approachToPlayer = Approach.TOWARDS.ToString();
 	}
 
 	public override BossAttack AddComponent (GameObject g)
@@ -114,22 +118,29 @@ public class DataAttackJump : DataAttack {
 
 [Serializable]
 public class DataAttackShoot : DataAttack {
-	public DataProjectile[] projectiles { get; set; }
-	public float spawnSpeed { get; set; }
+	public float speedMove { get; set; }
+	public float speedRotation { get; set; }
+	public int projectileAmount { get; set; }
+	public string projectileDirection { get; set; }
+	public float spawnDelay { get; set; } //Time between each spawn
+	public float scale { get; set; }
+
+	public DataAttackShoot ()
+	{
+		speedMove = 0.1f;
+		speedRotation = 0.1f;
+		projectileAmount = 1;
+		projectileDirection = ProjectileDirection.FORWARDS.ToString();
+		spawnDelay = 0.1f;
+		scale = 1f;
+	}
 
 	public override BossAttack AddComponent (GameObject g)
 	{
-		var c = g.AddComponent<BossAttackJump>();
+		var c = g.AddComponent<BossAttackProjectile>();
+		c.data = this;
 		return c;
 	}
-}
-#endregion
-
-#region DATA PROJECTILE
-[Serializable]
-public abstract class DataProjectile {
-	public float speed { get; set; }
-	public DataPosition pos { get; set; }
 }
 #endregion
 

@@ -1,60 +1,69 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class BossAttackJump : BossAttack {
 
-	private Boss boss;
-	private JumpManager mgJump;
-	private MovementManager mgMovement;
+	private enum State { JUMPSTART, JUMPING, JUMPEND }
+	private State state;
+
+	private Approach approachToPlayer;
 
 	private bool hasJumped = false;
-	private float cdWait;
-
-	public DataAttackJump data;
-
-	//Awake
-	void Awake()
-	{
-		boss = GetComponent<Boss>();
-		mgJump = GetComponent<JumpManager>();
-		mgMovement = GetComponent<MovementManager>();
-	}
+	private bool moving = false;
+	private Direction moveDir;
 
 	public override void Init ()
 	{
-		mgJump.jumpSpeed = data.jumpSpeed;
-		mgJump.jumpTime = data.jumpTime;
-		mgJump.fallSpeed = data.fallSpeed;
+		var d = (DataAttackJump)data;
+		mgJump.jumpSpeed = d.jumpSpeed;
+		mgJump.jumpTime = d.jumpTime;
+		mgJump.fallSpeed = -d.fallSpeed;
+		mgMovement.moveSpeed = d.moveSpeed;
+		approachToPlayer = (Approach)Enum.Parse(typeof(Approach), d.approachToPlayer);
+		SetState(State.JUMPSTART);
 	}
 
 	public override void UpdateEnabled ()
 	{
-		if(Time.time > cdWait)
+		if(moving) Move();
+
+		if(state == State.JUMPSTART)
 		{
-			if(state == State.STARTING)
-			{
-				cdWait = Time.time + data.timeStart;
-				state = State.ENABLED;
-			}
-			else if(state == State.ENABLED)
-			{
-				mgJump.HoldJump(true);
-				if(!hasJumped && mgJump.GetState() != JumpManager.JumpState.GROUNDED)
-				{
-					hasJumped = true;
-				}
-				else if(mgJump.GetState() == JumpManager.JumpState.GROUNDED)
-				{
-					state = State.ENDING;
-					cdWait = Time.time + data.timeEnd;
-				}
-			}
-			else if(state == State.ENDING)
-			{
-				Disable();
-				boss.NextAttack();
-			}
+			if(mgJump.GetState() != JumpManager.JumpState.GROUNDED) SetState(State.JUMPING);
+			mgJump.HoldJump(true); //Jump
+			moving = true; //Move
+			moveDir = boss.GetDirectionToPlayer();
+		}
+		else if(state == State.JUMPING)
+		{
+			if(mgJump.GetState() == JumpManager.JumpState.GROUNDED) SetState(State.JUMPEND);
+		}
+		else if(state == State.JUMPEND)
+		{
+			mgJump.HoldJump(false);
+			moving = false;
+			EndAttack();
+		}
+	}
+
+	void SetState(State state)
+	{
+		this.state = state;
+	}
+
+	void Move()
+	{
+		if(approachToPlayer == Approach.TOWARDS) //Movement
+		{
+			if(moveDir == Direction.RIGHT) mgMovement.MoveRight();
+			else mgMovement.MoveLeft();
+		}
+		else
+		{
+			if(moveDir == Direction.RIGHT) mgMovement.MoveLeft();
+			else mgMovement.MoveRight();
 		}
 	}
 }

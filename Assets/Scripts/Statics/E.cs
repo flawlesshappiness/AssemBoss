@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class E {
 
 }
 
 public enum Direction { NONE, UP, RIGHT, DOWN, LEFT }
+public enum Approach { TOWARDS, AWAYFROM }
+public enum ProjectileDirection { FORWARDS, CIRCLE }
