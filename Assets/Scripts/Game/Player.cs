@@ -19,15 +19,28 @@ public class Player : MonoBehaviour {
 
 	private bool enabled;
 
+	//Axis
+	private bool triggerAxisDown = false;
+
 	//Invincibility
 	private float cdInv;
+	public float cdbInv; //Invincibility time
 	private Lerp<float> lerpInv;
-	private Lerp<float> lerpInvDone;
 
 	//Stun
 	private float cdStun;
-	private float cdbStun;
+	private float cdbStun; //Stun time
+	private float cdbStunJump; //Jump time while stunned
 	private Direction stunMoveDirection = Direction.NONE;
+
+	//Dash
+	private float cdDash;
+	private float cdbDash; //Dash cooldown
+	private float cdDashEnd; //Time dash ends
+	public float timeDash; //Dash time
+	public float speedDash;
+	private bool dashing = false;
+	private bool hasDashed = false;
 
 	//Awake
 	void Awake()
@@ -38,12 +51,12 @@ public class Player : MonoBehaviour {
 		mgSprite = GetComponent<SpriteManager>();
 		health = GetComponent<Health>();
 
-		cdbStun = health.cdbHit * 0.6f;
-		mgJump.cdbHitTime = health.cdbHit * 0.25f;
-		lerpInv = Lerp.Get(health.cdbHit, 0.1f, 0.7f);
-		lerpInvDone = Lerp.Get(0f, 1f, 1f);
+		//Stun
+		cdbStun = cdbInv * 0.6f;
+		cdbStunJump = cdbInv * 0.25f;
 
-		SetControls();
+		//Dash
+		cdbDash = timeDash + 0.1f;
 	}
 
 	// Use this for initialization
@@ -54,11 +67,12 @@ public class Player : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		if(!enabled) return;
-		Movement();
-		Jumping();
 		Attack();
+		CheckToDash();
+		Jumping();
+		Movement();
 
-		if(lerpInv.IsFinished() && mgSprite.GetAlpha() < 1f) mgSprite.SetAlpha(1f);
+		if(lerpInv != null && lerpInv.IsFinished() && mgSprite.GetAlpha() < 1f) mgSprite.SetAlpha(1f);
 	}
 
 	public void EnablePlayer(LevelManager mgLevel, ParticleManager mgParticle)
@@ -68,6 +82,7 @@ public class Player : MonoBehaviour {
 		this.mgParticle = mgParticle;
 	}
 
+	#region MOVEMENT
 	void Movement()
 	{
 		if(Stunned())
@@ -91,13 +106,16 @@ public class Player : MonoBehaviour {
 			break;
 		}
 	}
-
+	#endregion
+	#region JUMP
 	void Jumping()
 	{
+		if(Stunned()) return;
 		if(Input.GetKeyDown(Controls.player_jump)) mgJump.HoldJump(true);
 		else if(Input.GetKeyUp(Controls.player_jump)) mgJump.HoldJump(false);
 	}
-
+	#endregion
+	#region ATTACK
 	void Attack()
 	{
 		if(Stunned()) return;
@@ -106,30 +124,95 @@ public class Player : MonoBehaviour {
 			mgAttack.Attack();
 		}
 	}
+	#endregion
+	#region DASH
+	void CheckToDash()
+	{
+		if(Time.time > cdDashEnd && dashing)
+		{
+			mgJump.SetFloating(false);
+			mgMovement.ResetSpeed();
+			dashing = false;
+			return;
+		}
+		if(hasDashed) return;
+		if(Stunned() || Time.time < cdDash) return;
+		if(Controls.curControlType == Controls.controlType.KEYBOARD)
+		{
+			if(Input.GetKeyDown(Controls.player_dodge)) Dash();
+		}
+		else
+		{
+			if(Input.GetAxisRaw("ControllerTrigger") < 0)
+			{
+				if(!triggerAxisDown)
+				{
+					Dash();
+					triggerAxisDown = true;
+				}
+			}
+			else if(Input.GetAxis("ControllerTrigger") == 0)
+			{
+				triggerAxisDown = false;
+			}
+		}
+	}
 
+	void Dash()
+	{
+		mgMovement.SetSpeed(speedDash);
+		mgJump.SetFloating(true);
+		Stun(timeDash, mgMovement.GetCurrentDirection());
+		MakeInvincible(timeDash);
+		dashing = true;
+		hasDashed = true;
+		cdDash = Time.time + cdbDash;
+		cdDashEnd = Time.time + timeDash;
+	}
+
+	public void ResetDash()
+	{
+		hasDashed = false;
+	}
+	#endregion
 	#region STUN
 	public bool Stunned()
 	{
 		return Time.time < cdStun;
 	}
 
-	public void Stun(Direction moveDirection)
+	public void Stun(float time, Direction moveDirection)
 	{
-		cdStun = Time.time + cdbStun;
+		cdStun = Time.time + time;
 		stunMoveDirection = moveDirection;
 	}
 	#endregion
-	#region DAMAGE
-	public void OnDamage()
+	#region INVINCIBLE
+	void MakeInvincible(float time)
 	{
-		if(health.Alive())
+		float timeLeft = cdInv - Time.time;
+		if(time > timeLeft)
 		{
-			Stun(health.GetHitDirection()); //Stun player
-			mgJump.OnDamaged(); //Cause hit jump
-
-			lerpInv.Reset(); //Reset flash lerp
-			mgSprite.SetAlphaLerp(lerpInv); //Set flash lerp
+			cdInv = Time.time + time;
+			lerpInv = Lerp.Get(time, 0.1f, 0.5f);
+			mgSprite.SetAlphaLerp(lerpInv);
 		}
+	}
+
+	bool IsInvincible()
+	{
+		return Time.time < cdInv;
+	}
+	#endregion
+	#region DAMAGE
+	public void Damage(int amount, Direction dir)
+	{
+		if(IsInvincible()) return; //Do nothing on invincible
+
+		health.Decrease(amount);
+		MakeInvincible(cdbInv); //Make player invincible
+		Stun(cdbStun, dir); //Stun player
+		mgJump.ForceJump(cdbStunJump); //Stun jump
 	}
 
 	public void OnDeath()
@@ -138,27 +221,6 @@ public class Player : MonoBehaviour {
 		gameObject.SetActive(false);
 
 		mgLevel.PlayerDeath();
-	}
-	#endregion
-	#region CONTROLS
-	void SetControls()
-	{
-		string[] joysticks = Input.GetJoystickNames();
-		if(joysticks.Length > 0)
-		{
-			if(joysticks[0].Equals(""))
-			{
-				Controls.SetDefaultControls_Keyboard();
-			}
-			else if(joysticks[0].Contains("Xbox 360"))
-			{
-				Controls.SetDefaultControls_XBox360();
-			}
-		}
-		else
-		{
-			Controls.SetDefaultControls_Keyboard();
-		}
 	}
 	#endregion
 }

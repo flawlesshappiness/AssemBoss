@@ -12,11 +12,32 @@ public class Controls : MonoBehaviour {
 	public static KeyCode player_down;
 
 	public static KeyCode player_jump;
+	public static KeyCode player_attack;
 	public static KeyCode player_dodge;
 
-	public static KeyCode player_attack;
+	//Controls
+	public static List<KeyCode> controlsController = new List<KeyCode>(){
+		KeyCode.JoystickButton0, //A
+		KeyCode.JoystickButton1, //Y
+		KeyCode.JoystickButton2, //X
+		KeyCode.JoystickButton3, //B
+		KeyCode.JoystickButton4, //Left button
+		KeyCode.JoystickButton5, //Right button
+		KeyCode.JoystickButton6, //Back
+		KeyCode.JoystickButton7, //Start
+		KeyCode.JoystickButton8, //Left analog
+		KeyCode.JoystickButton9, //Right analog
+	};
 
-	public static KeyCode player_ability;
+	public static List<KeyCode> controlsKeyboard = new List<KeyCode>(){
+		KeyCode.A,
+		KeyCode.S,
+		KeyCode.D,
+		KeyCode.W,
+		KeyCode.J,
+		KeyCode.K,
+		KeyCode.L,
+	};
 
 	// Use this for initialization
 	void Start () {
@@ -28,14 +49,9 @@ public class Controls : MonoBehaviour {
 		Debug.Log("Set control type: XBox 360");
 		curControlType = controlType.XBOX360;
 
-		player_jump = KeyCode.JoystickButton0; //A
-		player_dodge = KeyCode.Joystick8Button9; //Left trigger
-
-		player_attack = KeyCode.JoystickButton2; //X
-		//KeyCode.JoystickButton3; //Y
-		//KeyCode.JoystickButton1; //B
-
-		player_ability = KeyCode.Joystick8Button10; //Right trigger
+		player_jump = KeyCode.JoystickButton0;
+		player_attack = KeyCode.JoystickButton2;
+		player_dodge = KeyCode.JoystickButton10;
 	}
 
 	public static void SetDefaultControls_Keyboard()
@@ -48,11 +64,20 @@ public class Controls : MonoBehaviour {
 		player_up = KeyCode.W;
 		player_down = KeyCode.S;
 
-		player_jump = KeyCode.Space;
-		player_dodge = KeyCode.LeftShift;
-
 		player_attack = KeyCode.J;
+		player_jump = KeyCode.K;
+		player_dodge = KeyCode.L;
+	}
 
-		player_ability = KeyCode.LeftControl;
+	public static void AutoDetectController()
+	{
+		string[] joysticks = Input.GetJoystickNames();
+		if(joysticks.Length > 0)
+		{
+			if(joysticks[0].Contains("Xbox 360"))
+			{
+				SetDefaultControls_XBox360();
+			}
+		}
 	}
 }

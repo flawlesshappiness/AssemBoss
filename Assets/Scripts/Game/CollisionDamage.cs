@@ -29,9 +29,8 @@ public class CollisionDamage : MonoBehaviour {
 	{
 		if(c.tag == "Player")
 		{
-			var h = c.GetComponent<Health>();
-			h.SetHitDirection(GetHitDirection(c.transform.position));
-			h.Decrease(damage);
+			var p = c.GetComponent<Player>();
+			p.Damage(damage, GetHitDirection(c.transform.position));
 			onHitPlayer.Invoke();
 		}
 		else if(c.tag == "Wall")

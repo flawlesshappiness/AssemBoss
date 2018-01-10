@@ -17,11 +17,11 @@ public class BossAttackJump : BossAttack {
 	public override void Init ()
 	{
 		var d = (DataAttackJump)data;
-		mgJump.jumpSpeed = d.jumpSpeed;
-		mgJump.jumpTime = d.jumpTime;
-		mgJump.fallSpeed = -d.fallSpeed;
-		mgMovement.moveSpeed = d.moveSpeed;
-		approachToPlayer = (Approach)Enum.Parse(typeof(Approach), d.approachToPlayer);
+		mgJump.jumpSpeed = d.jumpSpeed.value;
+		mgJump.jumpTime = d.jumpTime.value;
+		mgJump.fallSpeed = -d.fallSpeed.value;
+		mgMovement.moveSpeed = d.moveSpeed.value;
+		approachToPlayer = (Approach)Enum.Parse(typeof(Approach), d.approachToPlayer.value);
 		SetState(State.JUMPSTART);
 	}
 

@@ -31,7 +31,7 @@ public abstract class BossAttack : MonoBehaviour {
 		{
 			if(state == State.STARTING)
 			{
-				cdWait = Time.time + data.timeStart;
+				cdWait = Time.time + data.timeStart.value;
 				SetState(State.ACTIVE);
 			}
 			else if(state == State.ACTIVE)
@@ -66,7 +66,7 @@ public abstract class BossAttack : MonoBehaviour {
 	public void EndAttack()
 	{
 		SetState(State.ENDING);
-		cdWait = Time.time + data.timeEnd;
+		cdWait = Time.time + data.timeEnd.value;
 	}
 
 	public abstract void Init();

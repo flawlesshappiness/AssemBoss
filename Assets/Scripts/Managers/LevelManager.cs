@@ -89,6 +89,7 @@ public class LevelManager : MonoBehaviour {
 		Destroy(boss.gameObject);
 		boss = null;
 
+		state = State.IDLE;
 		textEnd.color = Color.clear;
 		mgPanel.Back();
 	}

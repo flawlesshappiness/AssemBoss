@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class MovementManager : MonoBehaviour {
 
-	public float moveSpeed = 0.05f;
+	public float moveSpeed;
+	private float speed;
 	public Collider2D frontCollider;
 
 	private bool facingRight = true;
@@ -12,7 +13,7 @@ public class MovementManager : MonoBehaviour {
 	//Awake
 	void Awake()
 	{
-
+		speed = moveSpeed;
 	}
 
 	// Use this for initialization
@@ -27,12 +28,12 @@ public class MovementManager : MonoBehaviour {
 
 	public void MoveRight(){
 		if(!facingRight) Flip();
-		else if(!IsFacingWall()) Move(moveSpeed);
+		else if(!IsFacingWall()) Move(speed);
 	}
 
 	public void MoveLeft(){
 		if(facingRight) Flip();
-		else if(!IsFacingWall()) Move(-moveSpeed);
+		else if(!IsFacingWall()) Move(-speed);
 	}
 
 	void Move(float x){
@@ -55,5 +56,20 @@ public class MovementManager : MonoBehaviour {
 		}
 
 		return false;
+	}
+
+	public Direction GetCurrentDirection()
+	{
+		return (facingRight) ? Direction.RIGHT : Direction.LEFT;
+	}
+
+	public void ResetSpeed()
+	{
+		SetSpeed(moveSpeed);
+	}
+
+	public void SetSpeed(float speed)
+	{
+		this.speed = speed;
 	}
 }

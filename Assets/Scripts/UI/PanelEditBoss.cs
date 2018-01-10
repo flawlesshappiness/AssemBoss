@@ -82,7 +82,7 @@ public class PanelEditBoss : MonoBehaviour {
 		ClearAttacksList();
 		foreach(DataAttack attack in attacks)
 		{
-			AddAttackToList(attack.name);
+			AddAttackToList(attack.name.value);
 		}
 	}
 
@@ -166,7 +166,7 @@ public class PanelEditBoss : MonoBehaviour {
 			break;
 		}
 
-		da.type = type;
+		da.type.value = type;
 		attacks.Add(da);
 		mgPanel.Forward(panelEditAttack);
 		mgEditAttack.LoadAttack(da);
@@ -269,7 +269,7 @@ public class PanelEditBoss : MonoBehaviour {
 		for(int i = 0; i < attacks.Count; i++)
 		{
 			var attack = attacks[i];
-			var item = new DialogManager.ListItem(attack.name, i);
+			var item = new DialogManager.ListItem(attack.name.value, i);
 			dicAttackSelection.Add(item, attack);
 			items.Add(item);
 		}

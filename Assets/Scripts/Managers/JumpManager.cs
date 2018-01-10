@@ -1,12 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class JumpManager : MonoBehaviour {
 
 	public Collider2D bottomCollider;
 
-	public enum JumpState { JUMPING, FALLING, GROUNDED, DAMAGED }
+	public enum JumpState { JUMPING, FALLING, GROUNDED, FLOATING }
 	private JumpState state = JumpState.FALLING;
 
 	//Times
@@ -21,13 +22,13 @@ public class JumpManager : MonoBehaviour {
 	//Cooldowns
 	private float cdJump; //Jump cooldown
 	private float cdbJump = 0.1f; //Base jump cooldown
-	private float cdHitTime; //Hit cooldown
-	[HideInInspector]
-	public float cdbHitTime = 2f; //Base hit cooldown
 
 	//Jump
 	private bool holdingJump = false;
 	private float jumpEnd; //Time when jump will end
+
+	//Event
+	public UnityEvent onGrounded;
 
 	// Use this for initialization
 	void Start () {
@@ -40,26 +41,22 @@ public class JumpManager : MonoBehaviour {
 		{
 			if(IsGrounded())
 			{
-				if(holdingJump) Jump();
+				if(holdingJump && Time.time > cdJump) Jump();
 			}
 			else state = JumpState.FALLING;
 		}
 		else if(state == JumpState.JUMPING)
 		{
-			if(holdingJump && Time.time < jumpEnd || Time.time < cdJump) MoveUp();
+			if(holdingJump && Time.time < jumpEnd) MoveUp();
 			else state = JumpState.FALLING;
-		}
-		else if(state == JumpState.DAMAGED)
-		{
-			if(Time.time < cdHitTime) MoveUp();
-			else
-			{
-				state = JumpState.FALLING;
-			}
 		}
 		else if(state == JumpState.FALLING)
 		{
-			if(IsGrounded()) state = JumpState.GROUNDED;
+			if(IsGrounded())
+			{
+				onGrounded.Invoke();
+				state = JumpState.GROUNDED;
+			}
 			else Fall();
 		}
 	}
@@ -67,6 +64,12 @@ public class JumpManager : MonoBehaviour {
 	public void HoldJump(bool holding)
 	{
 		holdingJump = holding;
+	}
+
+	public void SetFloating(bool floating)
+	{
+		state = floating ? JumpState.FLOATING : JumpState.FALLING;
+		if(!floating) curSpeed = 0f;
 	}
 
 	void Jump()
@@ -104,11 +107,12 @@ public class JumpManager : MonoBehaviour {
 		return false;
 	}
 
-	public void OnDamaged()
+	public void ForceJump(float jumpTime)
 	{
 		curSpeed = jumpSpeed;
-		cdHitTime = Time.time + cdbHitTime;
-		state = JumpState.DAMAGED;
+		jumpEnd = Time.time + jumpTime;
+		HoldJump(true);
+		state = JumpState.JUMPING;
 	}
 
 	public JumpState GetState()

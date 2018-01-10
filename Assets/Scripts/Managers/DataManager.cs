@@ -78,35 +78,21 @@ public class DataBoss : DataObject {
 #region DATA ATTACK
 [Serializable]
 public abstract class DataAttack {
-	public string name { get; set; }
-	public string type { get; set; }
-	public float timeStart { get; set; }
-	public float timeEnd { get; set; }
-
-	public DataAttack ()
-	{
-		name = "New attack";
-	}
+	public DataValue<string> name = new DataValue<string>("New attack");
+	public DataValue<string> type = new DataValue<string>("");
+	public DataValue<float> timeStart = new DataValue<float>(0.0f);
+	public DataValue<float> timeEnd = new DataValue<float>(0.0f);
 
 	public abstract BossAttack AddComponent(GameObject g);
 }
 
 [Serializable]
 public class DataAttackJump : DataAttack {
-	public float jumpSpeed { get; set; }
-	public float fallSpeed { get; set; }
-	public float jumpTime { get; set; }
-	public float moveSpeed { get; set; }
-	public string approachToPlayer { get; set; }
-
-	public DataAttackJump ()
-	{
-		jumpSpeed = 0.07f;
-		fallSpeed = 6f;
-		jumpTime = 5f;
-		moveSpeed = 0.05f;
-		approachToPlayer = Approach.TOWARDS.ToString();
-	}
+	public DataValue<float> jumpSpeed = new DataValue<float>(0.07f);
+	public DataValue<float> fallSpeed = new DataValue<float>(6f);
+	public DataValue<float> jumpTime = new DataValue<float>(5f);
+	public DataValue<float> moveSpeed = new DataValue<float>(0.05f);
+	public DataValue<string> approachToPlayer = new DataValue<string>(Approach.TOWARDS.ToString());
 
 	public override BossAttack AddComponent (GameObject g)
 	{
@@ -118,22 +104,12 @@ public class DataAttackJump : DataAttack {
 
 [Serializable]
 public class DataAttackShoot : DataAttack {
-	public float speedMove { get; set; }
-	public float speedRotation { get; set; }
-	public int projectileAmount { get; set; }
-	public string projectileDirection { get; set; }
-	public float spawnDelay { get; set; } //Time between each spawn
-	public float scale { get; set; }
-
-	public DataAttackShoot ()
-	{
-		speedMove = 0.1f;
-		speedRotation = 0.1f;
-		projectileAmount = 1;
-		projectileDirection = ProjectileDirection.FORWARDS.ToString();
-		spawnDelay = 0.1f;
-		scale = 1f;
-	}
+	public DataValue<float> speedMove = new DataValue<float>(0.1f);
+	public DataValue<float> speedRotation = new DataValue<float>(0.1f);
+	public DataValue<int> projectileAmount = new DataValue<int>(1);
+	public DataValue<string> projectileDirection = new DataValue<string>(ProjectileDirection.FORWARDS.ToString());
+	public DataValue<float> spawnDelay = new DataValue<float>(0.1f); //Time between each spawn
+	public DataValue<float> scale = new DataValue<float>(1f);
 
 	public override BossAttack AddComponent (GameObject g)
 	{
@@ -150,4 +126,51 @@ public class DataPosition {
 	public float xOffset { get; set; }
 	public float yOffset { get; set; }
 }
+
+#region VALUES
+[Serializable]
+public class DataInt {
+	public int value = 0;
+	public DataInt (int v)
+	{
+		value = v;
+	}
+}
+
+[Serializable]
+public class DataFloat {
+	public float value = 0f;
+	public DataFloat (float v)
+	{
+		value = v;
+	}
+}
+
+[Serializable]
+public class DataBool {
+	public bool value = false;
+	public DataBool (bool v)
+	{
+		value = v;
+	}
+}
+
+[Serializable]
+public class DataString {
+	public string value = "";
+	public DataString (string v)
+	{
+		value = v;
+	}
+}
+
+[Serializable]
+public class DataValue<T> {
+	public T value;
+	public DataValue (T v)
+	{
+		value = v;
+	}
+}
+#endregion
 #endregion

@@ -6,9 +6,6 @@ using UnityEngine.Events;
 public class Health : MonoBehaviour {
 
 	public int health = 1;
-	private Direction hitDir = Direction.NONE;
-	private float cdHit; //Cooldown before next hit
-	public float cdbHit = 0.1f; //Base cooldown before next hit
 
 	public UnityEvent onDamage;
 	public UnityEvent onDeath;
@@ -26,9 +23,7 @@ public class Health : MonoBehaviour {
 	public void Decrease(int amount)
 	{
 		if(!Alive()) return;
-		if(Time.time < cdHit) return;
 		health -= amount;
-		cdHit = Time.time + cdbHit;
 		if(!Alive())
 		{
 			onDeath.Invoke();
@@ -49,15 +44,5 @@ public class Health : MonoBehaviour {
 	public bool Alive()
 	{
 		return health > 0;
-	}
-
-	public void SetHitDirection(Direction dir)
-	{
-		hitDir = dir;
-	}
-
-	public Direction GetHitDirection()
-	{
-		return hitDir;
 	}
 }

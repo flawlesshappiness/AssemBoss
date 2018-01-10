@@ -20,12 +20,12 @@ public class BossAttackProjectile : BossAttack {
 	public override void Init ()
 	{
 		DataAttackShoot d = (DataAttackShoot)data;
-		amount = d.projectileAmount;
-		speedMove = d.speedMove;
-		speedRotation = d.speedRotation;
-		delay = d.spawnDelay;
-		scale = d.scale;
-		direction = (ProjectileDirection)Enum.Parse(typeof(ProjectileDirection), d.projectileDirection);
+		amount = d.projectileAmount.value;
+		speedMove = d.speedMove.value;
+		speedRotation = d.speedRotation.value;
+		delay = d.spawnDelay.value;
+		scale = d.scale.value;
+		direction = (ProjectileDirection)Enum.Parse(typeof(ProjectileDirection), d.projectileDirection.value);
 
 		if(direction == ProjectileDirection.CIRCLE)
 		{
