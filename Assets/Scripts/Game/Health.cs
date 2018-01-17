@@ -33,7 +33,7 @@ public class Health : MonoBehaviour {
 			onDamage.Invoke();
 		}
 
-		print(name + " took " + amount + " damage");
+		print(name + " took " + amount + " damage. " + health + " left.");
 	}
 
 	public void Set(int amount)

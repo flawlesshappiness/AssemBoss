@@ -6,7 +6,11 @@ public class MovementManager : MonoBehaviour {
 
 	public float moveSpeed;
 	private float speed;
-	public Collider2D frontCollider;
+	private SpriteRenderer ren;
+
+	public Transform mainTrans;
+	public Collider2D rightCollider;
+	public Collider2D leftCollider;
 
 	private bool facingRight = true;
 
@@ -14,6 +18,7 @@ public class MovementManager : MonoBehaviour {
 	void Awake()
 	{
 		speed = moveSpeed;
+		ren = GetComponent<SpriteRenderer>();
 	}
 
 	// Use this for initialization
@@ -24,6 +29,18 @@ public class MovementManager : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		
+	}
+
+	public void MoveDirection(Direction d)
+	{
+		if(d == Direction.RIGHT) MoveRight();
+		else if(d == Direction.LEFT) MoveLeft();
+	}
+
+	public void MoveOppositeDirection(Direction d)
+	{
+		if(d == Direction.RIGHT) MoveLeft();
+		else if(d == Direction.LEFT) MoveRight();
 	}
 
 	public void MoveRight(){
@@ -37,17 +54,20 @@ public class MovementManager : MonoBehaviour {
 	}
 
 	void Move(float x){
-		transform.position += new Vector3(x, 0.0f, 0.0f);
+		mainTrans.position += new Vector3(x, 0.0f, 0.0f);
 	}
 
 	void Flip(){
+		if(ren != null) ren.flipX = facingRight;
 		facingRight = !facingRight;
-		transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
 	}
 
 	bool IsFacingWall()
 	{
-		var cols = Physics2D.OverlapBoxAll(frontCollider.transform.position, frontCollider.bounds.size, 0f);
+		Collider2D[] cols = null;
+		var dir = GetCurrentDirection();
+		if(dir == Direction.RIGHT) cols = Physics2D.OverlapBoxAll(rightCollider.transform.position, rightCollider.bounds.size, 0f);
+		if(dir == Direction.LEFT) cols = Physics2D.OverlapBoxAll(leftCollider.transform.position, leftCollider.bounds.size, 0f);
 		foreach(Collider2D c in cols)
 		{
 			if(c.transform != transform && !c.isTrigger) {

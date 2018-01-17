@@ -51,6 +51,11 @@ public class BossAttackJump : BossAttack {
 	void SetState(State state)
 	{
 		this.state = state;
+
+		if(state == State.JUMPING)
+		{
+			mgSize.FadeSize(mgSize.GetSizeMultiplied(0.8f, 1.2f), 0.1f);
+		}
 	}
 
 	void Move()
@@ -65,5 +70,16 @@ public class BossAttackJump : BossAttack {
 			if(moveDir == Direction.RIGHT) mgMovement.MoveLeft();
 			else mgMovement.MoveRight();
 		}
+	}
+
+	public override void AttackStarting ()
+	{
+		boss.FacePlayer(approachToPlayer == Approach.TOWARDS);
+		mgSize.FadeSize(mgSize.GetSizeMultiplied(1.3f, 0.7f), data.timeStart.value);
+	}
+
+	public override void AttackEnding ()
+	{
+		mgSize.FadeToDefault(0.1f);
 	}
 }

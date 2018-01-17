@@ -5,6 +5,7 @@ using UnityEngine.Events;
 
 public class JumpManager : MonoBehaviour {
 
+	public Transform mainTrans;
 	public Collider2D bottomCollider;
 
 	public enum JumpState { JUMPING, FALLING, GROUNDED, FLOATING }
@@ -72,6 +73,11 @@ public class JumpManager : MonoBehaviour {
 		if(!floating) curSpeed = 0f;
 	}
 
+	public bool IsFloating()
+	{
+		return state == JumpState.FLOATING;
+	}
+
 	void Jump()
 	{
 		curSpeed = jumpSpeed;
@@ -82,7 +88,7 @@ public class JumpManager : MonoBehaviour {
 
 	void MoveUp()
 	{
-		transform.position += new Vector3(0f, curSpeed * Time.deltaTime, 0f);
+		mainTrans.position += new Vector3(0f, curSpeed * Time.deltaTime, 0f);
 	}
 
 	void Fall()
@@ -91,7 +97,7 @@ public class JumpManager : MonoBehaviour {
 		else curSpeed = fallSpeed;
 
 		holdingJump = false;
-		transform.position += new Vector3(0f, curSpeed * Time.deltaTime, 0f);
+		mainTrans.position += new Vector3(0f, curSpeed * Time.deltaTime, 0f);
 	}
 
 	bool IsGrounded()

@@ -15,16 +15,15 @@ public class PanelEditAttack : MonoBehaviour {
 
 	//UI
 	public GameObject layoutValues;
-	private List<GameObject> listKeyValue = new List<GameObject>();
+	private UIKeyValueSpawner kvSpawner;
 
 	//Privates
 	private DataAttack attack;
-	private List<Action> saveActions = new List<Action>();
 
 	//Awake
 	void Awake()
 	{
-		mgPrefab = GetComponent<PrefabManager>();
+		kvSpawner = new UIKeyValueSpawner(mgPrefab, mgDialog, layoutValues);
 	}
 
 	// Use this for initialization
@@ -41,35 +40,38 @@ public class PanelEditAttack : MonoBehaviour {
 	{
 		attack = da;
 		var type = da.GetType();
-		saveActions.Clear(); //prepare for save actions
 
 		//Create key values
-		ClearAttackKeyValue();
-		SpawnKeyValueInputField("Name:", InputField.ContentType.Standard, da.name);
-		SpawnKeyValueText("Attack type:", da.type);
-		SpawnKeyValueInputField("Startup time:", InputField.ContentType.DecimalNumber, da.timeStart);
-		SpawnKeyValueInputField("Recovery time:", InputField.ContentType.DecimalNumber, da.timeEnd);
+		kvSpawner.Clear();
+		kvSpawner.SpawnInputField("Name:", InputField.ContentType.Standard, da.name);
+		kvSpawner.SpawnText("Attack type:", da.type);
+		kvSpawner.SpawnToggle("Can be randomly used:", da.activeAttack);
+		kvSpawner.SpawnInputField("Startup time:", InputField.ContentType.DecimalNumber, da.timeStart);
+		kvSpawner.SpawnInputField("Recovery time:", InputField.ContentType.DecimalNumber, da.timeEnd);
 
 		if(type == typeof(DataAttackJump))
 		{
-			//Create key values
 			DataAttackJump d = (DataAttackJump)da;
-			SpawnKeyValueSlider("Jump time:", 0.1f, 0.6f, d.jumpTime);
-			SpawnKeyValueSlider("Jump speed:", 3f, 6f, d.jumpSpeed);
-			SpawnKeyValueSlider("Fall speed:", 4f, 6f, d.fallSpeed);
-			SpawnKeyValueSlider("Move speed:", 0f, 0.1f, d.moveSpeed);
-			SpawnKeyValueListButton("Move approach to player:", M.GetListOfEnum(typeof(Approach)), d.approachToPlayer);
+			kvSpawner.SpawnSlider("Jump time:", 0.1f, 0.6f, d.jumpTime);
+			kvSpawner.SpawnSlider("Jump speed:", 3f, 6f, d.jumpSpeed);
+			kvSpawner.SpawnSlider("Fall speed:", 4f, 6f, d.fallSpeed);
+			kvSpawner.SpawnSlider("Move speed:", 0f, 0.1f, d.moveSpeed);
+			kvSpawner.SpawnListButton("Move approach to player:", M.GetListOfEnum(typeof(Approach)), d.approachToPlayer);
 		}
 		else if(type == typeof(DataAttackShoot))
 		{
-			//Add values for projectile attack
 			DataAttackShoot d = (DataAttackShoot)da;
-			SpawnKeyValueListButton("Projectile direction type:", M.GetListOfEnum(typeof(ProjectileDirection)), d.projectileDirection);
-			SpawnKeyValueSlider("Size:", 0.5f, 1.5f, d.scale);
-			SpawnKeyValueSlider("Movement speed:", 0.01f, 0.2f, d.speedMove);
-			SpawnKeyValueSlider("Homing speed:", 0f, 2f, d.speedRotation);
-			SpawnKeyValueInputField("Projectile amount:", InputField.ContentType.IntegerNumber, d.projectileAmount);
-			SpawnKeyValueInputField("Spawn delay:", InputField.ContentType.DecimalNumber, d.spawnDelay);
+			kvSpawner.SpawnListButton("Projectile direction type:", M.GetListOfEnum(typeof(ProjectileDirection)), d.projectileDirection);
+			kvSpawner.SpawnSlider("Size:", 0.5f, 1.5f, d.scale);
+			kvSpawner.SpawnSlider("Movement speed:", 0.01f, 0.2f, d.speedMove);
+			kvSpawner.SpawnSlider("Homing speed:", 0f, 2f, d.speedRotation);
+			kvSpawner.SpawnInputField("Projectile amount:", InputField.ContentType.IntegerNumber, d.projectileAmount);
+			kvSpawner.SpawnInputField("Spawn delay:", InputField.ContentType.DecimalNumber, d.spawnDelay);
+		}
+		else if(type == typeof(DataAttackSequence))
+		{
+			DataAttackSequence d = (DataAttackSequence)da;
+
 		}
 	}
 
@@ -87,94 +89,7 @@ public class PanelEditAttack : MonoBehaviour {
 
 	public void SaveAndBack()
 	{
-		foreach(Action a in saveActions) a();
+		kvSpawner.Save();
 		mgPanel.Back();
 	}
-
-	#region KEYS & VALUES
-	void SpawnKeyValueText(string name, DataValue<string> dv)
-	{
-		AddKeyValue("Attack type:", mgPrefab.SpawnText(dv.value));
-	}
-
-	void SpawnKeyValueListButton(string name, List<string> list, DataValue<string> dv)
-	{
-		var g = mgPrefab.SpawnButton(dv.value);
-		var t = g.GetComponentInChildren<Text>();
-		g.GetComponent<Button>().onClick.AddListener(delegate {
-			var items = new List<DialogManager.ListItem>();
-			for(int i = 0; i < list.Count; i++) items.Add(new DialogManager.ListItem(list[i], i));
-			mgDialog.DisplayList("", items, delegate(DialogManager.ListItem obj) {
-				t.text = obj.name;
-			});
-		});
-		saveActions.Add(delegate { dv.value = t.text; });
-		AddKeyValue(name, g);
-	}
-
-	void SpawnKeyValueInputField(string name, InputField.ContentType type, DataValue<int> dv)
-	{
-		var g = mgPrefab.SpawnInputField(dv.value.ToString(), type);
-		saveActions.Add(delegate { dv.value = GetInputFieldValueInt(g); });
-		AddKeyValue(name, g);
-	}
-
-	void SpawnKeyValueInputField(string name, InputField.ContentType type, DataValue<float> dv)
-	{
-		var g = mgPrefab.SpawnInputField(dv.value.ToString(), type);
-		saveActions.Add(delegate { dv.value = GetInputFieldValueFloat(g); });
-		AddKeyValue(name, g);
-	}
-
-	void SpawnKeyValueInputField(string name, InputField.ContentType type, DataValue<string> dv)
-	{
-		var g = mgPrefab.SpawnInputField(dv.value.ToString(), type);
-		saveActions.Add(delegate { dv.value = g.GetComponent<InputField>().text; });
-		AddKeyValue(name, g);
-	}
-
-	void SpawnKeyValueSlider(string name, float min, float max, DataValue<float> dv)
-	{
-		var g = mgPrefab.SpawnSlider(min, max, dv.value);
-		saveActions.Add(delegate { dv.value = g.GetComponent<Slider>().value; });
-		AddKeyValue(name, g);
-	}
-
-	void AddKeyValue(string keyText, GameObject valueObject)
-	{
-		AddChildToLayout(mgPrefab.SpawnText(keyText), layoutValues);
-		AddChildToLayout(valueObject, layoutValues);
-	}
-
-	void AddChildToLayout(GameObject child, GameObject layout)
-	{
-		child.transform.SetParent(layout.transform);
-		child.transform.localScale = new Vector3(1f, 1f, 1f);
-		listKeyValue.Add(child);
-	}
-
-	void ClearAttackKeyValue()
-	{
-		foreach(GameObject g in listKeyValue)
-		{
-			Destroy(g);
-		}
-		listKeyValue.Clear();
-	}
-	#endregion
-	#region PARSING
-	float GetInputFieldValueFloat(GameObject g)
-	{
-		var ip = g.GetComponent<InputField>();
-		if(ip.text == "") return 0f;
-		else return float.Parse(ip.text);
-	}
-
-	int GetInputFieldValueInt(GameObject g)
-	{
-		var ip = g.GetComponent<InputField>();
-		if(ip.text == "") return 0;
-		else return int.Parse(ip.text);
-	}
-	#endregion
 }

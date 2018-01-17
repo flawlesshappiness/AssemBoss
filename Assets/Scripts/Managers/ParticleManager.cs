@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class ParticleManager : MonoBehaviour {
 
-	private List<ParticleObject> particles = new List<ParticleObject>();
-
 	// Use this for initialization
 	void Start () {
 
@@ -13,55 +11,31 @@ public class ParticleManager : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		if(particles.Count > 0)
-		{
-			for(int i = particles.Count; i <= 0; i--)
-			{
-				var particle = particles[i];
-				if(particle.deathTime <= Time.time) DestroyParticle(particle);
-			}
-		}
+		
 	}
 
-	public GameObject SpawnParticle(float lifeTime, string particleName)
+	public ParticleSystem SpawnParticle(string particleName, float time)
 	{
-		var particle = new ParticleObject(lifeTime, particleName);
-		particles.Add(particle);
-		return particle.obj;
+		var particle = Instantiate(Resources.Load("Particles/"+particleName)) as GameObject;
+		var p = particle.GetComponent<ParticleSystem>();
+		Destroy(particle, time);
+		return p;
 	}
 
-	public GameObject SpawnParticle(float lifeTime, string particleName, Vector3 position)
+	public ParticleSystem SpawnParticle(string particleName, float life, Vector3 position)
 	{
-		var obj = SpawnParticle(lifeTime, particleName);
+		var p = SpawnParticle(particleName, life);
+		var obj = p.gameObject;
 		obj.transform.position = position;
-		return obj;
+		return p;
 	}
 
-	public GameObject SpawnParticle(float lifeTime, string particleName, Transform parent)
+	public ParticleSystem SpawnParticle(string particleName, float life, Transform parent)
 	{
-		var obj = SpawnParticle(lifeTime, particleName);
+		var p = SpawnParticle(particleName, life);
+		var obj = p.gameObject;
 		obj.transform.parent = parent;
 		obj.transform.position = parent.position;
-		return obj;
-	}
-
-	void DestroyParticle(ParticleObject particle)
-	{
-		particles.Remove(particle);
-		Destroy(particle.obj);
-	}
-
-	private class ParticleObject
-	{
-		public readonly float deathTime;
-		public GameObject obj;
-
-		public ParticleObject (float lifeTime, string particleName)
-		{
-			deathTime = Time.time + lifeTime;
-			obj = new GameObject();
-			GameObject particle = Instantiate(Resources.Load("Particles/"+particleName), obj.transform) as GameObject;
-			particle.transform.position = obj.transform.position;
-		}
+		return p;
 	}
 }

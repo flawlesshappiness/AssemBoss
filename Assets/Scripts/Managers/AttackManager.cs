@@ -8,17 +8,26 @@ public class AttackManager : MonoBehaviour {
 	private State state = State.IDLE;
 
 	private Player player;
+	private MovementManager mgMovement;
+	private JumpManager mgJump;
 
+	private Direction attackDir;
 	private Collider2D attack;
-	public Collider2D attack1;
-	public Collider2D attack2;
-	public Collider2D attack3;
+	public Collider2D attackRight;
+	public Collider2D attackLeft;
+	public Collider2D attackUp;
+	public Collider2D attackDown;
+	public Color cCombo1;
+	public Color cCombo2;
+	public Color cCombo3;
 
 	private int damage = 1;
 
 	private float cdAttack;
-	private float cdbAttack = 0.1f; //Attack cooldown
+	private float cdbAttack = 0.05f; //Time attack is active
+	private float cdbAttackFinal = 0.3f; //Time before final attack in combo
 	private float cdbRecovery = 0.1f; //Recovery cooldown
+	private float cdbRecoveryFinal = 0.3f; //Recovery cooldown after final attack in combo
 
 	private bool hasHit = true;
 
@@ -27,7 +36,6 @@ public class AttackManager : MonoBehaviour {
 
 	//Combo
 	private int comboCur = 0;
-	private float cdbComboFinal = 0.3f; //Time before the final attack in the combo
 	private float cdCombo;
 	private float cdbCombo; //Cooldown before combo resets
 
@@ -39,7 +47,9 @@ public class AttackManager : MonoBehaviour {
 	void Awake()
 	{
 		player = GetComponent<Player>();
-		cdbCombo = (cdbAttack + cdbRecovery) * 2;
+		mgMovement = GetComponent<MovementManager>();
+		mgJump = GetComponent<JumpManager>();
+		cdbCombo = (cdbAttack + cdbRecovery) * 3;
 	}
 
 	// Use this for initialization
@@ -57,7 +67,6 @@ public class AttackManager : MonoBehaviour {
 			if(holdAttack)
 			{
 				SetState(State.STARTUP);
-				holdAttack = false;
 			}
 		}
 		else if(state == State.STARTUP)
@@ -65,22 +74,24 @@ public class AttackManager : MonoBehaviour {
 			IncreaseCombo();
 			if(comboCur == 1)
 			{
-				attack = attack1;
 				damage = 1;
+				attack.GetComponent<SpriteRenderer>().color = cCombo1;
 				cdWait = Time.time;
 			}
 			else if(comboCur == 2)
 			{
-				attack = attack2;
 				damage = 1;
+				attack.GetComponent<SpriteRenderer>().color = cCombo2;
 				cdWait = Time.time;
 			}
 			else if(comboCur == 3)
 			{
-				attack = attack3;
 				damage = 2;
+				attack.GetComponent<SpriteRenderer>().color = cCombo3;
 				tokenHit = true;
-				cdWait = Time.time + cdbComboFinal;
+				cdWait = Time.time + cdbAttackFinal;
+				player.Stun(cdbAttackFinal, Direction.NONE);
+				mgJump.SetFloating(true);
 			}
 			SetState(State.ATTACKING);
 		}
@@ -93,16 +104,29 @@ public class AttackManager : MonoBehaviour {
 		}
 		else if(state == State.RECOVERY)
 		{
-			attack.gameObject.SetActive(false);
+			if(mgJump.IsFloating()) mgJump.SetFloating(false);
+			hasHit = false;
+			holdAttack = false;
+			if(attack != null) attack.gameObject.SetActive(false);
 			attack = null;
 			SetState(State.IDLE);
-			cdWait = Time.time + cdbRecovery;
+			cdWait = (tokenHit) ? Time.time + cdbRecoveryFinal : Time.time + cdbRecovery;
+			tokenHit = false;
 		}
 	}
 
-	public void Attack()
+	public void Attack(Direction dir)
 	{
 		holdAttack = true;
+
+		if(state != State.IDLE) return;
+		if(dir == Direction.RIGHT) attack = attackRight;
+		else if(dir == Direction.LEFT) attack = attackLeft;
+		else if(dir == Direction.UP) attack = attackUp;
+		else if(dir == Direction.DOWN && mgJump.GetState() != JumpManager.JumpState.GROUNDED) attack = attackDown;
+		else attack = (mgMovement.GetCurrentDirection() == Direction.RIGHT) ? attackRight : attackLeft;
+
+		attackDir = (dir == Direction.NONE) ? mgMovement.GetCurrentDirection() : dir;
 	}
 
 	void CheckAttack()
@@ -121,17 +145,26 @@ public class AttackManager : MonoBehaviour {
 		{
 			if(c.isTrigger && c.tag == "Enemy") {
 				c.GetComponent<Health>().Decrease(damage);
+				if(attackDir == Direction.DOWN)
+				{
+					mgJump.ForceJump(0.25f); //Pogo
+					player.ResetDash();
+				}
 			}
 		}
 		hasHit = true;
 		if(tokenHit) tokens++;
 	}
 
+	public void DisruptCombo()
+	{
+		SetState(State.RECOVERY);
+	}
+
 	void SetCombo(int amount)
 	{
 		comboCur = amount;
 		if(comboCur > 3) comboCur = 1;
-		print(comboCur);
 	}
 
 	void IncreaseCombo()

@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Health))]
-[RequireComponent(typeof(MovementManager))]
-[RequireComponent(typeof(SpriteManager))]
-[RequireComponent(typeof(PrefabManager))]
 public class Boss : MonoBehaviour {
 
-	private Health health;
-	private SpriteManager mgSprite;
-	private MovementManager mgMovement;
+	public Health health;
+	public SpriteManager mgSprite;
+	public MovementManager mgMovement;
+	public JumpManager mgJump;
+	public ParticleManager mgParticle;
+	public PrefabManager mgPrefab;
+	public SizeManager mgSize;
+
 	private LevelManager mgLevel;
-	private ParticleManager mgParticle;
 	private Player player;
 
 	private bool enabled;
@@ -23,9 +23,7 @@ public class Boss : MonoBehaviour {
 	//Awake
 	void Awake()
 	{
-		health = GetComponent<Health>();
-		mgSprite = GetComponent<SpriteManager>();
-		mgMovement = GetComponent<MovementManager>();
+		
 	}
 
 	// Use this for initialization
@@ -49,13 +47,15 @@ public class Boss : MonoBehaviour {
 	public void OnDamage()
 	{
 		mgSprite.FadeColor(Color.red, Color.white, 0.5f);
+		mgLevel.UpdateBossHealth(health.health);
 	}
 
 	public void OnDeath()
 	{
-		mgParticle.SpawnParticle(2f, "BossExplode", transform.position);
+		mgParticle.SpawnParticle("BossExplode", 2f, transform.position);
 		gameObject.SetActive(false);
 
+		mgLevel.UpdateBossHealth(health.health);
 		mgLevel.BossDeath();
 	}
 
@@ -85,5 +85,18 @@ public class Boss : MonoBehaviour {
 		var ppos = mgLevel.GetPlayerPosition();
 		var pos = transform.position;
 		return (ppos.x > pos.x) ? Direction.RIGHT : Direction.LEFT;
+	}
+
+	public void FacePlayer(bool towards)
+	{
+		var d = GetDirectionToPlayer();
+		if(towards)
+		{
+			if(mgMovement.GetCurrentDirection() != d) mgMovement.MoveDirection(d);
+		}
+		else
+		{
+			if(mgMovement.GetCurrentDirection() == d) mgMovement.MoveOppositeDirection(d);
+		}
 	}
 }

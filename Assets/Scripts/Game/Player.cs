@@ -121,8 +121,21 @@ public class Player : MonoBehaviour {
 		if(Stunned()) return;
 		if(Input.GetKeyDown(Controls.player_attack))
 		{
-			mgAttack.Attack();
+			mgAttack.Attack(GetAnalogDirection());
 		}
+	}
+
+	Direction GetAnalogDirection()
+	{
+		float hor = Input.GetAxisRaw("Horizontal");
+		float ver = Input.GetAxis("Vertical");
+		float min = 0.5f;
+
+		if(ver > min) return Direction.UP;
+		else if(ver < -min) return Direction.DOWN;
+		else if(hor > min) return Direction.RIGHT;
+		else if(hor < -min) return Direction.LEFT;
+		else return Direction.NONE;
 	}
 	#endregion
 	#region DASH
@@ -213,11 +226,13 @@ public class Player : MonoBehaviour {
 		MakeInvincible(cdbInv); //Make player invincible
 		Stun(cdbStun, dir); //Stun player
 		mgJump.ForceJump(cdbStunJump); //Stun jump
+		mgLevel.RemovePlayerHealth(amount);
+		mgAttack.DisruptCombo();
 	}
 
 	public void OnDeath()
 	{
-		mgParticle.SpawnParticle(2f, "PlayerExplode", transform.position);
+		mgParticle.SpawnParticle("PlayerExplode", 2f, transform.position);
 		gameObject.SetActive(false);
 
 		mgLevel.PlayerDeath();

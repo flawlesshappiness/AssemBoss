@@ -16,7 +16,7 @@ public class LevelManager : MonoBehaviour {
 	public Transform spawnBoss;
 
 	//UI
-	public Text textEnd;
+	public PanelGame panelGame;
 
 	//Privates
 	private PrefabManager mgPrefab;
@@ -70,9 +70,12 @@ public class LevelManager : MonoBehaviour {
 		boss.transform.position = spawnBoss.position;
 
 		//Spawn player
-		var g = mgPrefab.SpawnPrefabGame("Player");
-		g.transform.position = spawnPlayer.position;
-		player = g.GetComponent<Player>();
+		player = BuildPlayer(db.player);
+		player.transform.position = spawnPlayer.position;
+
+		//UI
+		panelGame.SetHealthBoss(0, db.health.value, db.health.value);
+		panelGame.SetHealthPlayer(db.player.health.value);
 
 		//Enable
 		player.EnablePlayer(this, mgParticle);
@@ -90,7 +93,7 @@ public class LevelManager : MonoBehaviour {
 		boss = null;
 
 		state = State.IDLE;
-		textEnd.color = Color.clear;
+		panelGame.HideText();
 		mgPanel.Back();
 	}
 
@@ -98,7 +101,7 @@ public class LevelManager : MonoBehaviour {
 	{
 		if(!fightEnd)
 		{
-			textEnd.text = "DEFEAT";
+			panelGame.ShowText("DEFEAT");
 			End();
 		}
 	}
@@ -107,7 +110,7 @@ public class LevelManager : MonoBehaviour {
 	{
 		if(!fightEnd)
 		{
-			textEnd.text = "VICTORY";
+			panelGame.ShowText("VICTORY");
 			End();
 		}
 	}
@@ -115,9 +118,20 @@ public class LevelManager : MonoBehaviour {
 	void End()
 	{
 		fightEnd = true;
-		textEnd.color = Color.white;
 		state = State.ENDING;
 		cdEnd = Time.time + cdbEnd;
+	}
+
+	Player BuildPlayer(DataPlayer d)
+	{
+		var g = mgPrefab.SpawnPrefabGame("Player");
+		var p = g.GetComponent<Player>();
+
+		//Health
+		var h = g.GetComponent<Health>();
+		h.Set(d.health.value);
+
+		return p;
 	}
 
 	Boss BuildBoss(DataBoss data)
@@ -127,12 +141,17 @@ public class LevelManager : MonoBehaviour {
 		var b = g.GetComponent<Boss>();
 
 		//Build stats
-		b.GetComponent<Health>().Set(data.health);
+		var h = b.health;
+		h.Set(data.health.value);
+
+		//Size
+		var s = b.mgSize;
+		s.SetDefaultSize(b.transform.localScale);
 
 		//Build attacks
 		foreach(DataAttack da in data.attacks)
 		{
-			b.AddAttack(da.AddComponent(g));
+			if(da.activeAttack.value) b.AddAttack(da.AddComponent(g));
 		}
 
 		return b;
@@ -157,4 +176,26 @@ public class LevelManager : MonoBehaviour {
 	{
 		return player;
 	}
+
+	#region UI
+	public void UpdateBossHealth(int amount)
+	{
+		panelGame.SetHealthBossValue(amount);
+	}
+
+	public void RemovePlayerHealth(int amount)
+	{
+		panelGame.RemoveHealthPlayer(amount);
+	}
+
+	public void AddPlayerHealth(int amount)
+	{
+		panelGame.AddHealthPlayer(amount);
+	}
+
+	public void ClearPlayerHealth()
+	{
+		panelGame.SetHealthPlayer(0);
+	}
+	#endregion
 }

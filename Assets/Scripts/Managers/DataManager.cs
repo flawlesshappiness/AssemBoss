@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -34,15 +35,32 @@ public class DataManager : MonoBehaviour {
 	/// </summary>
 	public T LoadFromFile<T>(string path)
 	{
-		if(File.Exists(path))
+		FileStream file = null;
+		try
 		{
-			BinaryFormatter bf = new BinaryFormatter();
-			FileStream file = File.Open(path, FileMode.Open);
-			T data = (T)bf.Deserialize(file);
-			file.Close();
-			//
-			return data;
+			if(File.Exists(path))
+			{
+				BinaryFormatter bf = new BinaryFormatter();
+				file = File.Open(path, FileMode.Open);
+				T data = (T)bf.Deserialize(file);
+				file.Close();
+				//
+				return data;
+			}
 		}
+		catch(SerializationException e)
+		{
+			print(e.Message);
+		}
+		catch(ArgumentException e)
+		{
+			print(e.Message);
+		}
+		finally
+		{
+			if(file != null) file.Close();
+		}
+
 		return default(T);
 	}
 
@@ -60,19 +78,21 @@ public abstract class DataObject {
 #region DATA BOSS
 [Serializable]
 public class DataBoss : DataObject {
-	public string name = "New boss";
-	public int health = 50;
+	public DataValue<String> name = new DataValue<string>("New boss");
+	public DataValue<int> health = new DataValue<int>(50);
+	public DataValue<float> sizeMult = new DataValue<float>(1f);
+	public DataPlayer player = new DataPlayer();
 	public DataAttack[] attacks { get; set; } //Use GetType() to get actual type
-
-	public DataBoss ()
-	{
-		
-	}
 
 	public string GetPath()
 	{
-		return Paths.GetBossDirectory() + "/" + name + ".boss";
+		return Paths.GetBossDirectory() + "/" + name.value + ".boss";
 	}
+}
+
+[Serializable]
+public class DataPlayer {
+	public DataValue<int> health = new DataValue<int>(5);
 }
 
 #region DATA ATTACK
@@ -82,6 +102,7 @@ public abstract class DataAttack {
 	public DataValue<string> type = new DataValue<string>("");
 	public DataValue<float> timeStart = new DataValue<float>(0.0f);
 	public DataValue<float> timeEnd = new DataValue<float>(0.0f);
+	public DataValue<bool> activeAttack = new DataValue<bool>(true); //Can attack be used by boss at random?
 
 	public abstract BossAttack AddComponent(GameObject g);
 }
@@ -93,6 +114,19 @@ public class DataAttackJump : DataAttack {
 	public DataValue<float> jumpTime = new DataValue<float>(5f);
 	public DataValue<float> moveSpeed = new DataValue<float>(0.05f);
 	public DataValue<string> approachToPlayer = new DataValue<string>(Approach.TOWARDS.ToString());
+	//On [condition] do [attack]
+
+	public override BossAttack AddComponent (GameObject g)
+	{
+		var c = g.AddComponent<BossAttackJump>();
+		c.data = this;
+		return c;
+	}
+}
+
+[Serializable]
+public class DataAttackJumpToPlayer : DataAttack {
+	
 
 	public override BossAttack AddComponent (GameObject g)
 	{
@@ -110,6 +144,18 @@ public class DataAttackShoot : DataAttack {
 	public DataValue<string> projectileDirection = new DataValue<string>(ProjectileDirection.FORWARDS.ToString());
 	public DataValue<float> spawnDelay = new DataValue<float>(0.1f); //Time between each spawn
 	public DataValue<float> scale = new DataValue<float>(1f);
+
+	public override BossAttack AddComponent (GameObject g)
+	{
+		var c = g.AddComponent<BossAttackProjectile>();
+		c.data = this;
+		return c;
+	}
+}
+
+[Serializable]
+public class DataAttackSequence : DataAttack {
+	public List<DataAttack> attacks = new List<DataAttack>();
 
 	public override BossAttack AddComponent (GameObject g)
 	{

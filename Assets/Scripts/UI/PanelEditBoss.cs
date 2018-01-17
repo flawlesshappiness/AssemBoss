@@ -21,18 +21,17 @@ public class PanelEditBoss : MonoBehaviour {
 
 	//UI
 	public Panel panelEditAttack;
-	public GameObject layoutValues;
 	public GameObject layoutAttackList;
+	public GameObject layoutValues;
+	private UIKeyValueSpawner kvSpawner;
 
 	//Privates
-	private DataBoss saveBoss; //Boss that might be saved
 	private DataBoss boss;
-	private List<Action<DataBoss>> saveActions = new List<Action<DataBoss>>();
+	private string bossName;
 
 	private BuildState state;
 	private List<DataAttack> attacks = new List<DataAttack>();
 	private List<GameObject> listAttacks = new List<GameObject>();
-	private List<GameObject> listKeyValue = new List<GameObject>();
 
 	//AttackSelection
 	private Dictionary<DialogManager.ListItem, DataAttack> dicAttackSelection = new Dictionary<DialogManager.ListItem, DataAttack>();
@@ -40,8 +39,7 @@ public class PanelEditBoss : MonoBehaviour {
 	//Awake
 	void Awake()
 	{
-		mgPrefab = GetComponent<PrefabManager>();
-		mgData = GetComponent<DataManager>();
+		kvSpawner = new UIKeyValueSpawner(mgPrefab, mgDialog, layoutValues);
 	}
 
 	// Use this for initialization
@@ -57,19 +55,16 @@ public class PanelEditBoss : MonoBehaviour {
 	public void LoadBoss(DataBoss boss, BuildState state)
 	{
 		this.boss = boss;
+		bossName =  boss.name.value;
 		this.state = state;
 
 		//Create Key&Values
-		ClearAttackKeyValue();
+		kvSpawner.Clear();
 
-		saveActions.Clear();
-		var kvName = mgPrefab.SpawnInputField(boss.name, InputField.ContentType.Standard);
-		saveActions.Add(delegate(DataBoss obj) { obj.name = kvName.GetComponent<InputField>().text; });
-		AddKeyValue("Name:", kvName);
-
-		var kvHealth = mgPrefab.SpawnInputField(boss.health.ToString(), InputField.ContentType.IntegerNumber);
-		saveActions.Add(delegate(DataBoss obj) { obj.health = GetInputFieldValueInt(kvHealth); });
-		AddKeyValue("Health:", kvHealth);
+		kvSpawner.SpawnInputField("Name:", InputField.ContentType.Standard, boss.name);
+		kvSpawner.SpawnInputField("Boss health:", InputField.ContentType.IntegerNumber, boss.health);
+		kvSpawner.SpawnSlider("Size multiplier:", 0.5f, 3f, boss.sizeMult);
+		kvSpawner.SpawnInputField("Player health:", InputField.ContentType.IntegerNumber, boss.player.health);
 
 		//Attacks
 		attacks = new List<DataAttack>();
@@ -101,44 +96,6 @@ public class PanelEditBoss : MonoBehaviour {
 			Destroy(g);
 		}
 		listAttacks.Clear();
-	}
-	#endregion
-	#region KEYS & VALUES
-	void AddKeyValue(string keyText, GameObject valueObject)
-	{
-		AddChildToLayout(mgPrefab.SpawnText(keyText), layoutValues);
-		AddChildToLayout(valueObject, layoutValues);
-	}
-
-	void AddChildToLayout(GameObject child, GameObject layout)
-	{
-		child.transform.SetParent(layout.transform);
-		child.transform.localScale = new Vector3(1f, 1f, 1f);
-		listKeyValue.Add(child);
-	}
-
-	void ClearAttackKeyValue()
-	{
-		foreach(GameObject g in listKeyValue)
-		{
-			Destroy(g);
-		}
-		listKeyValue.Clear();
-	}
-	#endregion
-	#region PARSING
-	float GetInputFieldValueFloat(GameObject g)
-	{
-		var ip = g.GetComponent<InputField>();
-		if(ip.text == "") return 0f;
-		else return float.Parse(ip.text);
-	}
-
-	int GetInputFieldValueInt(GameObject g)
-	{
-		var ip = g.GetComponent<InputField>();
-		if(ip.text == "") return 0;
-		else return int.Parse(ip.text);
 	}
 	#endregion
 	#region BUTTONS
@@ -207,23 +164,31 @@ public class PanelEditBoss : MonoBehaviour {
 
 	public void SaveAndBack()
 	{
-		saveBoss = SaveToBoss();
 		mgDialog.DisplayYesNo(
 			"Do you want to save?",
 			delegate {
 				string path = Paths.GetBossDirectory();
 				if(!Directory.Exists(path)) Directory.CreateDirectory(path);
-				if(boss.name != saveBoss.name && File.Exists(saveBoss.GetPath()))
+				if(File.Exists(boss.GetPath()))
 				{
-					mgDialog.DisplayYesNo("A boss with that name already exists. Overwrite?",
-						delegate {
-							Save();
-							mgPanel.Back();
-						},
-						delegate {
+					if(bossName != boss.name.value) //Name was changed but another file exists
+					{
+						mgDialog.DisplayYesNo("A boss with that name already exists. Overwrite?",
+							delegate {
+								Save();
+								mgPanel.Back();
+							},
+							delegate {
 
-						}
-					);
+							}
+						);
+					}
+					else
+					{
+						if(state == BuildState.EDIT) mgData.DeleteFile(path + "/" + bossName + ".boss");
+						Save();
+						mgPanel.Back();
+					}
 				}
 				else
 				{
@@ -246,19 +211,12 @@ public class PanelEditBoss : MonoBehaviour {
 
 	void Save()
 	{
-		//Delete previous file if editting it
-		if(state == BuildState.EDIT) mgData.DeleteFile(saveBoss.GetPath());
+		//Save boss
+		kvSpawner.Save();
+		boss.attacks = attacks.ToArray();
 
 		//Save to new file
-		mgData.SaveToFile(saveBoss, saveBoss.GetPath());
-	}
-
-	DataBoss SaveToBoss()
-	{
-		var b = new DataBoss();
-		foreach(Action<DataBoss> a in saveActions) a(b);
-		b.attacks = attacks.ToArray();
-		return b;
+		mgData.SaveToFile(boss, boss.GetPath());
 	}
 	#endregion
 

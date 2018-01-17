@@ -1,0 +1,8 @@
+<ListOfTask>
+  <Task file="" description="Power move" />
+  <Task file="" description="Attack to all sides" completed="True" />
+  <Task file="" description="Attack pogoing" completed="True" />
+  <Task file="" description="Stab attack" />
+  <Task file="" description="Boss attack sequence" />
+  <Task file="" description="Combo not disrupted on damage" completed="True" />
+</ListOfTask>

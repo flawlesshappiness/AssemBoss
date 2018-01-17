@@ -14,14 +14,16 @@ public abstract class BossAttack : MonoBehaviour {
 	public PrefabManager mgPrefab;
 	public JumpManager mgJump;
 	public MovementManager mgMovement;
+	public SizeManager mgSize;
 
 	//Awake
 	void Awake()
 	{
 		boss = GetComponent<Boss>();
-		mgJump = GetComponent<JumpManager>();
-		mgMovement = GetComponent<MovementManager>();
-		mgPrefab = GetComponent<PrefabManager>();
+		mgJump = boss.mgJump;
+		mgMovement = boss.mgMovement;
+		mgPrefab = boss.mgPrefab;
+		mgSize = boss.mgSize;
 	}
 
 	void Update()
@@ -48,6 +50,8 @@ public abstract class BossAttack : MonoBehaviour {
 	void SetState(State state)
 	{
 		this.state = state;
+		if(state == State.STARTING) AttackStarting();
+		else if(state == State.ENDING) AttackEnding();
 	}
 
 	public void Enable()
@@ -71,4 +75,6 @@ public abstract class BossAttack : MonoBehaviour {
 
 	public abstract void Init();
 	public abstract void UpdateEnabled();
+	public abstract void AttackStarting();
+	public abstract void AttackEnding();
 }

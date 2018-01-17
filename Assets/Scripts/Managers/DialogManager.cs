@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using UnityEngine.UI;
+using System.Linq;
 
 [RequireComponent(typeof(PrefabManager))]
 public class DialogManager : MonoBehaviour {
@@ -13,24 +14,24 @@ public class DialogManager : MonoBehaviour {
 	public GameObject background;
 
 	//YesNo
-	public GameObject panelYesNo;
-	public Text titleYesNo;
-	private Action aYes;
-	private Action aNo;
+	public GameObject yesNoPanel;
+	public Text yesNoTitle;
+	private Action yesAction;
+	private Action noAction;
 
 	//Buttons
-	public GameObject panelButtons;
-	public Text titleButtons;
-	public GameObject layoutButtons;
-	private List<GameObject> childrenButtons = new List<GameObject>();
+	public GameObject buttonsPanel;
+	public Text buttonsTitle;
+	public GameObject buttonsLayout;
+	private List<GameObject> buttonsChildren = new List<GameObject>();
 
 	//List
-	public GameObject panelList;
-	public Text titleList;
-	public GameObject layoutList;
-	private Action<ListItem> aListSelect;
-	private List<GameObject> childrenList = new List<GameObject>();
-	private ListItem selectedListItem;
+	public GameObject listPanel;
+	public Text listTitle;
+	public GameObject listLayout;
+	private Action<ListItem> listSelectAction;
+	private List<GameObject> listChildren = new List<GameObject>();
+	private ListItem listSelectedItem;
 	private Button listSelectedButton;
 
 	//Awake
@@ -53,82 +54,80 @@ public class DialogManager : MonoBehaviour {
 	public void DisplayYesNo(string title, Action aYes, Action aNo)
 	{
 		//Title
-		titleYesNo.text = title;
+		yesNoTitle.text = title;
 
 		//Actions
-		this.aYes = aYes;
-		this.aNo = aNo;
+		this.yesAction = aYes;
+		this.noAction = aNo;
 
 		//Display
-		Display(panelYesNo);
+		Display(yesNoPanel);
 	}
 
 	public void ClickButtonYes()
 	{
 		Close();
-		aYes();
+		yesAction();
 	}
 
 	public void ClickButtonNo()
 	{
 		Close();
-		aNo();
+		noAction();
 	}
 	#endregion
 	#region BUTTONS
 	public void DisplayButtons(string title, List<string> options, Action<string> action)
 	{
 		//Title
-		titleButtons.text = title;
+		buttonsTitle.text = title;
 
 		//Buttons
-		foreach(GameObject g in childrenButtons) Destroy(g);
-		childrenButtons.Clear();
+		foreach(GameObject g in buttonsChildren) Destroy(g);
+		buttonsChildren.Clear();
 		foreach(string s in options)
 		{
-			var b = SpawnButton(s, layoutButtons.transform);
+			var b = SpawnButton(s, buttonsLayout.transform);
 			b.onClick.AddListener(delegate {
 				action(s);
 				Close();
 			});
 		}
 
-		var bCancel = SpawnButton("Cancel", layoutButtons.transform);
+		var bCancel = SpawnButton("Cancel", buttonsLayout.transform);
 		bCancel.onClick.AddListener(delegate {
 			Close();
 		});
 
 
 		//Display
-		Display(panelButtons);
+		Display(buttonsPanel);
+	}
+
+	Button SpawnButton(string text, Transform parent)
+	{
+		var g = mgPrefab.SpawnPrefabUI("Button");
+		buttonsChildren.Add(g);
+		g.transform.SetParent(parent);
+		g.transform.localScale = new Vector3(1f, 1f, 1f);
+		g.GetComponentInChildren<Text>().text = text;
+		return g.GetComponent<Button>();
 	}
 	#endregion
 	#region LIST
-	public class ListItem
-	{
-		public string name;
-		public int id;
-
-		public ListItem (string name, int id)
-		{
-			this.name = name;
-			this.id = id;
-		}
-	}
-
 	public void DisplayList(string title, List<DialogManager.ListItem> items, Action<ListItem> action)
 	{
 		//Title
-		titleList.text = title;
+		listTitle.text = title;
 
 		//Items
-		foreach(GameObject g in childrenList) Destroy(g);
-		childrenList.Clear();
+		foreach(GameObject g in listChildren) Destroy(g);
+		listChildren.Clear();
 		foreach(ListItem i in items)
 		{
 			var g = mgPrefab.SpawnPrefabUI("ButtonList");
-			childrenList.Add(g);
-			g.transform.SetParent(layoutList.transform);
+			listChildren.Add(g);
+			g.transform.SetParent(listLayout.transform);
 			g.transform.localScale = new Vector3(1f, 1f, 1f);
 			g.GetComponentInChildren<Text>().text = i.name;
 			var b = g.GetComponent<Button>();
@@ -136,21 +135,21 @@ public class DialogManager : MonoBehaviour {
 				if(listSelectedButton != null) listSelectedButton.interactable = true;
 				listSelectedButton = b;
 				listSelectedButton.interactable = false;
-				selectedListItem = i;
+				listSelectedItem = i;
 			});
-			aListSelect = action;
 		}
+		listSelectAction = action;
 
 		//Display
-		Display(panelList);
+		Display(listPanel);
 	}
 
 	public void ClickButtonListSelect()
 	{
-		if(selectedListItem != null)
+		if(listSelectedItem != null)
 		{
-			aListSelect(selectedListItem);
-			selectedListItem = null;
+			listSelectAction(listSelectedItem);
+			listSelectedItem = null;
 			Close();
 		}
 	}
@@ -171,13 +170,15 @@ public class DialogManager : MonoBehaviour {
 		background.SetActive(false);
 	}
 
-	Button SpawnButton(string text, Transform parent)
+	public class ListItem
 	{
-		var g = mgPrefab.SpawnPrefabUI("Button");
-		childrenButtons.Add(g);
-		g.transform.SetParent(parent);
-		g.transform.localScale = new Vector3(1f, 1f, 1f);
-		g.GetComponentInChildren<Text>().text = text;
-		return g.GetComponent<Button>();
+		public string name;
+		public int id;
+
+		public ListItem (string name, int id)
+		{
+			this.name = name;
+			this.id = id;
+		}
 	}
 }

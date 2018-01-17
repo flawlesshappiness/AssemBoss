@@ -7,7 +7,7 @@ public class E {
 
 }
 
-public enum AttackType { JUMP, PROJECTILE }
+public enum AttackType { JUMP, PROJECTILE, SEQUENCE }
 public enum Direction { NONE, UP, RIGHT, DOWN, LEFT }
 public enum Approach { TOWARDS, AWAYFROM }
 public enum ProjectileDirection { FORWARDS, CIRCLE }

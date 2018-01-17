@@ -73,6 +73,14 @@ public class PrefabManager : MonoBehaviour {
 		return g;
 	}
 
+	public GameObject SpawnToggle(bool toggled)
+	{
+		var g = SpawnPrefabUI("Toggle");
+		var t = g.GetComponent<Toggle>();
+		t.isOn = toggled;
+		return g;
+	}
+
 	public GameObject SpawnDropdown(System.Type enumType, int value)
 	{
 		return SpawnDropdown(M.GetListOfEnum(enumType), value);

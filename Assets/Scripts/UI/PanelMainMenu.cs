@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 using System.IO;
+using System.Runtime.Serialization;
 
 [RequireComponent(typeof(DataManager))]
 public class PanelMainMenu : MonoBehaviour {
@@ -61,14 +63,14 @@ public class PanelMainMenu : MonoBehaviour {
 
 	void EditBoss(DataBoss boss)
 	{
-		mgEditBoss.LoadBoss(boss, BuildState.EDIT);
 		mgPanel.Forward(panelBuild);
+		mgEditBoss.LoadBoss(boss, BuildState.EDIT);
 	}
 
 	public void CreateBoss()
 	{
-		mgEditBoss.LoadBoss(new DataBoss(), BuildState.CREATE);
 		mgPanel.Forward(panelBuild);
+		mgEditBoss.LoadBoss(new DataBoss(), BuildState.CREATE);
 	}
 
 	public void QuitGame()
@@ -84,9 +86,12 @@ public class PanelMainMenu : MonoBehaviour {
 		for(int i = 0; i < files.Length; i++)
 		{
 			var boss = GetBoss(files[i]);
-			var item = new DialogManager.ListItem(boss.name, i);
-			dicBossSelection.Add(item, boss);
-			items.Add(item);
+			if(boss != null)
+			{
+				var item = new DialogManager.ListItem(boss.name.value, i);
+				dicBossSelection.Add(item, boss);
+				items.Add(item);
+			}
 		}
 
 		return items;

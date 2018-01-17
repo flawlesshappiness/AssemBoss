@@ -70,4 +70,14 @@ public class BossAttackProjectile : BossAttack {
 		var p = g.GetComponent<Projectile>();
 		p.Fire(speedMove, speedRotation, boss.GetPlayer());
 	}
+
+	public override void AttackStarting ()
+	{
+		//throw new NotImplementedException ();
+	}
+
+	public override void AttackEnding ()
+	{
+		//throw new NotImplementedException ();
+	}
 }
