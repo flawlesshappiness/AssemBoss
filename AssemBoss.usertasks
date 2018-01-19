@@ -3,6 +3,10 @@
   <Task file="" description="Attack to all sides" completed="True" />
   <Task file="" description="Attack pogoing" completed="True" />
   <Task file="" description="Stab attack" />
-  <Task file="" description="Boss attack sequence" />
+  <Task file="" description="Boss attack sequence" completed="True" />
   <Task file="" description="Combo not disrupted on damage" completed="True" />
+  <Task file="" description="Attack list does not update first time" />
+  <Task file="" description="Projectile only goes right" />
+  <Task file="" description="Set start moves for boss" />
+  <Task file="" description="When move speed is 0 don't move while jumping" />
 </ListOfTask>

@@ -62,7 +62,7 @@ public class BossAttackProjectile : BossAttack {
 	void SpawnProjectile()
 	{
 		var g = mgPrefab.SpawnPrefabGame("Projectile");
-		g.transform.position = transform.position;
+		g.transform.position = boss.middleTrans.position;
 		g.transform.localScale = new Vector3(scale, scale, scale);
 		g.transform.RotateAround(g.transform.position, Vector3.forward, circleState++ * circleAngle);
 

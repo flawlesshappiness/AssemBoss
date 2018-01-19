@@ -71,6 +71,21 @@ public class PanelEditBoss : MonoBehaviour {
 		if(boss.attacks != null && boss.attacks.Length > 0) attacks.AddRange(boss.attacks);
 	}
 
+	public DataAttack GetAttack(int idx)
+	{
+		return attacks.ElementAt(idx);
+	}
+
+	public int GetAttackIndex(DataAttack da)
+	{
+		return attacks.IndexOf(da);
+	}
+
+	public List<DataAttack> GetAttacks()
+	{
+		return attacks;
+	}
+
 	#region ATTACKS
 	public void UpdateAttackList()
 	{

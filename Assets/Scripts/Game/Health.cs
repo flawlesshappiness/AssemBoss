@@ -5,7 +5,8 @@ using UnityEngine.Events;
 
 public class Health : MonoBehaviour {
 
-	public int health = 1;
+	private int health = 1;
+	private int max;
 
 	public UnityEvent onDamage;
 	public UnityEvent onDeath;
@@ -20,6 +21,12 @@ public class Health : MonoBehaviour {
 		
 	}
 
+	public void Init(int amount)
+	{
+		Set(amount);
+		max = amount;
+	}
+
 	public void Decrease(int amount)
 	{
 		if(!Alive()) return;
@@ -32,13 +39,21 @@ public class Health : MonoBehaviour {
 		{
 			onDamage.Invoke();
 		}
-
-		print(name + " took " + amount + " damage. " + health + " left.");
 	}
 
 	public void Set(int amount)
 	{
 		health = amount;
+	}
+
+	public int Get()
+	{
+		return health;
+	}
+
+	public float GetPerc()
+	{
+		return (float)health / (float)max;
 	}
 
 	public bool Alive()

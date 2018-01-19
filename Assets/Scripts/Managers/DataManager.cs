@@ -102,25 +102,30 @@ public abstract class DataAttack {
 	public DataValue<string> type = new DataValue<string>("");
 	public DataValue<float> timeStart = new DataValue<float>(0.0f);
 	public DataValue<float> timeEnd = new DataValue<float>(0.0f);
-	public DataValue<bool> activeAttack = new DataValue<bool>(true); //Can attack be used by boss at random?
+	public List<DataAttackNext> nextAttacks = new List<DataAttackNext>();
+	public DataAttack elseNextAttack;
 
 	public abstract BossAttack AddComponent(GameObject g);
 }
 
 [Serializable]
+public class DataAttackNext {
+	public string category { get; set; }
+	public string value { get; set; }
+	public DataAttack nextAttack { get; set; }
+}
+
+[Serializable]
 public class DataAttackJump : DataAttack {
-	public DataValue<float> jumpSpeed = new DataValue<float>(0.07f);
+	public DataValue<float> jumpSpeed = new DataValue<float>(5f);
 	public DataValue<float> fallSpeed = new DataValue<float>(6f);
 	public DataValue<float> jumpTime = new DataValue<float>(5f);
 	public DataValue<float> moveSpeed = new DataValue<float>(0.05f);
 	public DataValue<string> approachToPlayer = new DataValue<string>(Approach.TOWARDS.ToString());
-	//On [condition] do [attack]
 
 	public override BossAttack AddComponent (GameObject g)
 	{
-		var c = g.AddComponent<BossAttackJump>();
-		c.data = this;
-		return c;
+		return g.AddComponent<BossAttackJump>();
 	}
 }
 
@@ -130,9 +135,7 @@ public class DataAttackJumpToPlayer : DataAttack {
 
 	public override BossAttack AddComponent (GameObject g)
 	{
-		var c = g.AddComponent<BossAttackJump>();
-		c.data = this;
-		return c;
+		return g.AddComponent<BossAttackJump>();
 	}
 }
 
@@ -147,21 +150,7 @@ public class DataAttackShoot : DataAttack {
 
 	public override BossAttack AddComponent (GameObject g)
 	{
-		var c = g.AddComponent<BossAttackProjectile>();
-		c.data = this;
-		return c;
-	}
-}
-
-[Serializable]
-public class DataAttackSequence : DataAttack {
-	public List<DataAttack> attacks = new List<DataAttack>();
-
-	public override BossAttack AddComponent (GameObject g)
-	{
-		var c = g.AddComponent<BossAttackProjectile>();
-		c.data = this;
-		return c;
+		return g.AddComponent<BossAttackProjectile>();
 	}
 }
 #endregion

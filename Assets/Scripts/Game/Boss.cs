@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class Boss : MonoBehaviour {
 
@@ -12,13 +13,14 @@ public class Boss : MonoBehaviour {
 	public PrefabManager mgPrefab;
 	public SizeManager mgSize;
 
-	private LevelManager mgLevel;
+	public LevelManager mgLevel;
+	public Transform middleTrans;
 	private Player player;
 
 	private bool enabled;
 	private new string name;
 
-	private List<BossAttack> attacks = new List<BossAttack>();
+	private Dictionary<DataAttack, BossAttack> attacks = new Dictionary<DataAttack, BossAttack>();
 
 	//Awake
 	void Awake()
@@ -36,18 +38,25 @@ public class Boss : MonoBehaviour {
 		if(!enabled) return;
 	}
 
-	public void EnableBoss(LevelManager mgLevel, ParticleManager mgParticle)
+	//Setup after load
+	public void Setup()
 	{
-		this.mgLevel = mgLevel;
-		this.mgParticle = mgParticle;
+		foreach(KeyValuePair<DataAttack, BossAttack> kv in attacks)
+		{
+			kv.Value.SetData(kv.Key);
+		}
+	}
+
+	public void EnableBoss()
+	{
 		enabled = true;
-		NextAttack();
+		GetRandomAttack().Enable();
 	}
 
 	public void OnDamage()
 	{
 		mgSprite.FadeColor(Color.red, Color.white, 0.5f);
-		mgLevel.UpdateBossHealth(health.health);
+		mgLevel.UpdateBossHealth(health.Get());
 	}
 
 	public void OnDeath()
@@ -55,23 +64,24 @@ public class Boss : MonoBehaviour {
 		mgParticle.SpawnParticle("BossExplode", 2f, transform.position);
 		gameObject.SetActive(false);
 
-		mgLevel.UpdateBossHealth(health.health);
+		mgLevel.UpdateBossHealth(health.Get());
 		mgLevel.BossDeath();
 	}
 
 	#region ATTACKS
-	public void AddAttack(BossAttack attack)
+	public void AddAttack(DataAttack da)
 	{
-		attacks.Add(attack);
+		attacks.Add(da, da.AddComponent(gameObject));
 	}
 
-	public void NextAttack()
+	public BossAttack GetAttack(DataAttack da)
 	{
-		if(attacks.Count > 0)
-		{
-			var attack = attacks[Random.Range(0, attacks.Count)];
-			attack.Enable();
-		}
+		return attacks[da];
+	}
+
+	public BossAttack GetRandomAttack()
+	{
+		return attacks.Values.ToList()[Random.Range(0, attacks.Count)];
 	}
 	#endregion
 

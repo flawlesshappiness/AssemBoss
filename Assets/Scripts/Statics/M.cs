@@ -39,4 +39,20 @@ public class M {
 	{
 		return Enum.GetNames(type).ToList();
 	}
+
+	public static bool IsLastSibling(Transform t)
+	{
+		bool found = false;
+		foreach(Transform child in t.parent)
+		{
+			if(child == t) found = true;
+			else found = false;
+		}
+		return found;
+	}
+
+	public static bool IsFirstSibling(Transform t)
+	{
+		return t.GetSiblingIndex() == 0;
+	}
 }

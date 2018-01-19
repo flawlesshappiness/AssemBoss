@@ -15,6 +15,9 @@ public class LevelManager : MonoBehaviour {
 	public Transform spawnPlayer;
 	public Transform spawnBoss;
 
+	public Wall wallLeft;
+	public Wall wallRight;
+
 	//UI
 	public PanelGame panelGame;
 
@@ -28,11 +31,15 @@ public class LevelManager : MonoBehaviour {
 	private float cdbEnd = 2f;
 	private bool fightEnd = false;
 
+	private float width;
+
 	//Awake
 	void Awake()
 	{
 		mgPrefab = GetComponent<PrefabManager>();
 		mgParticle = GetComponent<ParticleManager>();
+
+		width = Mathf.Abs(wallRight.transform.position.x) - Mathf.Abs(wallLeft.transform.position.x); 
 	}
 
 	// Use this for initialization
@@ -79,7 +86,7 @@ public class LevelManager : MonoBehaviour {
 
 		//Enable
 		player.EnablePlayer(this, mgParticle);
-		boss.EnableBoss(this, mgParticle);
+		boss.EnableBoss();
 
 		state = State.PLAYING;
 	}
@@ -129,7 +136,7 @@ public class LevelManager : MonoBehaviour {
 
 		//Health
 		var h = g.GetComponent<Health>();
-		h.Set(d.health.value);
+		h.Init(d.health.value);
 
 		return p;
 	}
@@ -139,20 +146,22 @@ public class LevelManager : MonoBehaviour {
 		//Spawn
 		var g = mgPrefab.SpawnPrefabGame("Boss");
 		var b = g.GetComponent<Boss>();
+		b.mgLevel = this;
+		b.mgParticle = mgParticle;
 
 		//Build stats
 		var h = b.health;
-		h.Set(data.health.value);
+		h.Init(data.health.value);
 
 		//Size
 		var s = b.mgSize;
 		s.SetDefaultSize(b.transform.localScale);
 
 		//Build attacks
-		foreach(DataAttack da in data.attacks)
-		{
-			if(da.activeAttack.value) b.AddAttack(da.AddComponent(g));
-		}
+		foreach(DataAttack da in data.attacks) b.AddAttack(da);
+
+		//Setup after load
+		b.Setup();
 
 		return b;
 	}
@@ -177,6 +186,17 @@ public class LevelManager : MonoBehaviour {
 		return player;
 	}
 
+	public Boss GetBoss()
+	{
+		return boss;
+	}
+
+	#region NEXT ATTACK VALUE
+	public float GetSignedPercToMid(GameObject g)
+	{
+		return (Mathf.Abs(transform.position.x) - Mathf.Abs(g.transform.position.x));
+	}
+	#endregion
 	#region UI
 	public void UpdateBossHealth(int amount)
 	{

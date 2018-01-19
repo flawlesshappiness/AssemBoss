@@ -20,12 +20,14 @@ public class UIKeyValueSpawner : MonoBehaviour {
 	}
 
 	#region SPAWN
-	public void SpawnText(string name, DataValue<string> dv)
+	public GameObject SpawnText(string name, DataValue<string> dv)
 	{
-		AddKeyValue("Attack type:", mgPrefab.SpawnText(dv.value));
+		var g = mgPrefab.SpawnText(dv.value);
+		AddKeyValue("Attack type:", g);
+		return g;
 	}
 
-	public void SpawnListButton(string name, List<string> list, DataValue<string> dv)
+	public GameObject SpawnListButton(string name, List<string> list, DataValue<string> dv)
 	{
 		var g = mgPrefab.SpawnButton(dv.value);
 		var t = g.GetComponentInChildren<Text>();
@@ -38,41 +40,47 @@ public class UIKeyValueSpawner : MonoBehaviour {
 		});
 		saveActions.Add(delegate { dv.value = t.text; });
 		AddKeyValue(name, g);
+		return g;
 	}
 
-	public void SpawnInputField(string name, InputField.ContentType type, DataValue<int> dv)
+	public GameObject SpawnInputField(string name, InputField.ContentType type, DataValue<int> dv)
 	{
 		var g = mgPrefab.SpawnInputField(dv.value.ToString(), type);
 		saveActions.Add(delegate { dv.value = GetInputFieldValueInt(g); });
 		AddKeyValue(name, g);
+		return g;
 	}
 
-	public void SpawnInputField(string name, InputField.ContentType type, DataValue<float> dv)
+	public GameObject SpawnInputField(string name, InputField.ContentType type, DataValue<float> dv)
 	{
 		var g = mgPrefab.SpawnInputField(dv.value.ToString(), type);
 		saveActions.Add(delegate { dv.value = GetInputFieldValueFloat(g); });
 		AddKeyValue(name, g);
+		return g;
 	}
 
-	public void SpawnInputField(string name, InputField.ContentType type, DataValue<string> dv)
+	public GameObject SpawnInputField(string name, InputField.ContentType type, DataValue<string> dv)
 	{
 		var g = mgPrefab.SpawnInputField(dv.value.ToString(), type);
 		saveActions.Add(delegate { dv.value = g.GetComponent<InputField>().text; });
 		AddKeyValue(name, g);
+		return g;
 	}
 
-	public void SpawnSlider(string name, float min, float max, DataValue<float> dv)
+	public GameObject SpawnSlider(string name, float min, float max, DataValue<float> dv)
 	{
 		var g = mgPrefab.SpawnSlider(min, max, dv.value);
 		saveActions.Add(delegate { dv.value = g.GetComponent<Slider>().value; });
 		AddKeyValue(name, g);
+		return g;
 	}
 
-	public void SpawnToggle(string name, DataValue<bool> dv)
+	public GameObject SpawnToggle(string name, DataValue<bool> dv)
 	{
 		var g = mgPrefab.SpawnToggle(dv.value);
 		saveActions.Add(delegate { dv.value = g.GetComponent<Toggle>().isOn; });
 		AddKeyValue(name, g);
+		return g;
 	}
 	#endregion
 	#region PARENTING
