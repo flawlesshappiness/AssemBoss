@@ -20,7 +20,7 @@ public class BossAttackJump : BossAttack {
 		mgJump.jumpSpeed = d.jumpSpeed.value;
 		mgJump.jumpTime = d.jumpTime.value;
 		mgJump.fallSpeed = -d.fallSpeed.value;
-		mgMovement.moveSpeed = d.moveSpeed.value;
+		mgMovement.SetSpeed(d.moveSpeed.value);
 		approachToPlayer = (Approach)Enum.Parse(typeof(Approach), d.approachToPlayer.value);
 		SetState(State.JUMPSTART);
 	}
@@ -34,7 +34,6 @@ public class BossAttackJump : BossAttack {
 			if(mgJump.GetState() != JumpManager.JumpState.GROUNDED) SetState(State.JUMPING);
 			mgJump.HoldJump(true); //Jump
 			moving = true; //Move
-			moveDir = boss.GetDirectionToPlayer();
 		}
 		else if(state == State.JUMPING)
 		{
@@ -75,6 +74,7 @@ public class BossAttackJump : BossAttack {
 	public override void AttackStarting ()
 	{
 		boss.FacePlayer(approachToPlayer == Approach.TOWARDS);
+		moveDir = boss.GetDirectionToPlayer();
 		mgSize.FadeSize(mgSize.GetSizeMultiplied(1.3f, 0.7f), data.timeStart.value);
 	}
 

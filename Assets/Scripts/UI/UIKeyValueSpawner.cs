@@ -69,8 +69,16 @@ public class UIKeyValueSpawner : MonoBehaviour {
 
 	public GameObject SpawnSlider(string name, float min, float max, DataValue<float> dv)
 	{
-		var g = mgPrefab.SpawnSlider(min, max, dv.value);
+		var g = mgPrefab.SpawnSlider(min, max, dv.value, false);
 		saveActions.Add(delegate { dv.value = g.GetComponent<Slider>().value; });
+		AddKeyValue(name, g);
+		return g;
+	}
+
+	public GameObject SpawnSlider(string name, int min, int max, DataValue<int> dv)
+	{
+		var g = mgPrefab.SpawnSlider(min, max, dv.value, true);
+		saveActions.Add(delegate { dv.value = (int)g.GetComponent<Slider>().value; });
 		AddKeyValue(name, g);
 		return g;
 	}

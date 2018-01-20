@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour {
 
+	public PrefabManager mgPrefab;
+	public ParticleManager mgParticle;
+
 	private bool active;
 	private float speed;
 	private float rotSpeed = 1f;
@@ -44,6 +47,7 @@ public class Projectile : MonoBehaviour {
 
 	public void Despawn()
 	{
+		mgParticle.SpawnParticle("ProjectileHit", 0.2f, transform.position);
 		gameObject.SetActive(false);
 		Destroy(gameObject);
 	}

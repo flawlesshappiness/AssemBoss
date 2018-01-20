@@ -100,6 +100,7 @@ public class DataPlayer {
 public abstract class DataAttack {
 	public DataValue<string> name = new DataValue<string>("New attack");
 	public DataValue<string> type = new DataValue<string>("");
+	public DataValue<bool> firstAttack = new DataValue<bool>(false);
 	public DataValue<float> timeStart = new DataValue<float>(0.0f);
 	public DataValue<float> timeEnd = new DataValue<float>(0.0f);
 	public List<DataAttackNext> nextAttacks = new List<DataAttackNext>();
@@ -142,11 +143,12 @@ public class DataAttackJumpToPlayer : DataAttack {
 [Serializable]
 public class DataAttackShoot : DataAttack {
 	public DataValue<float> speedMove = new DataValue<float>(0.1f);
-	public DataValue<float> speedRotation = new DataValue<float>(0.1f);
+	public DataValue<float> speedRotation = new DataValue<float>(0f);
 	public DataValue<int> projectileAmount = new DataValue<int>(1);
-	public DataValue<string> projectileDirection = new DataValue<string>(ProjectileDirection.FORWARDS.ToString());
+	public DataValue<string> projectileDirection = new DataValue<string>(ProjectileDirection.STRAIGHT_FORWARD.ToString());
 	public DataValue<float> spawnDelay = new DataValue<float>(0.1f); //Time between each spawn
-	public DataValue<float> scale = new DataValue<float>(1f);
+	public DataValue<float> scale = new DataValue<float>(0.2f);
+	public DataValue<bool> facePlayer = new DataValue<bool>(false);
 
 	public override BossAttack AddComponent (GameObject g)
 	{

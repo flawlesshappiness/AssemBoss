@@ -58,6 +58,11 @@ public class PanelEditBoss : MonoBehaviour {
 		bossName =  boss.name.value;
 		this.state = state;
 
+		//Attacks
+		attacks = new List<DataAttack>();
+		if(boss.attacks != null && boss.attacks.Length > 0) attacks.AddRange(boss.attacks);
+		UpdateAttackList();
+
 		//Create Key&Values
 		kvSpawner.Clear();
 
@@ -65,10 +70,6 @@ public class PanelEditBoss : MonoBehaviour {
 		kvSpawner.SpawnInputField("Boss health:", InputField.ContentType.IntegerNumber, boss.health);
 		kvSpawner.SpawnSlider("Size multiplier:", 0.5f, 3f, boss.sizeMult);
 		kvSpawner.SpawnInputField("Player health:", InputField.ContentType.IntegerNumber, boss.player.health);
-
-		//Attacks
-		attacks = new List<DataAttack>();
-		if(boss.attacks != null && boss.attacks.Length > 0) attacks.AddRange(boss.attacks);
 	}
 
 	public DataAttack GetAttack(int idx)
@@ -84,6 +85,13 @@ public class PanelEditBoss : MonoBehaviour {
 	public List<DataAttack> GetAttacks()
 	{
 		return attacks;
+	}
+
+	public List<string> GetAttackNames()
+	{
+		var list = new List<string>();
+		foreach(DataAttack a in GetAttacks()) list.Add(a.name.value);
+		return list;
 	}
 
 	#region ATTACKS

@@ -5,8 +5,12 @@
   <Task file="" description="Stab attack" />
   <Task file="" description="Boss attack sequence" completed="True" />
   <Task file="" description="Combo not disrupted on damage" completed="True" />
-  <Task file="" description="Attack list does not update first time" />
-  <Task file="" description="Projectile only goes right" />
-  <Task file="" description="Set start moves for boss" />
-  <Task file="" description="When move speed is 0 don't move while jumping" />
+  <Task file="" description="Attack list does not update first time" completed="True" />
+  <Task file="" description="Projectile only goes right" completed="True" />
+  <Task file="" description="Set start moves for boss" completed="True" />
+  <Task file="" description="When move speed is 0 don't move while jumping" completed="True" />
+  <Task file="" description="sounds" />
+  <Task file="" description="music" />
+  <Task file="" description="boss graphic" />
+  <Task file="" description="Disallow invalid name, such as names with ?" />
 </ListOfTask>

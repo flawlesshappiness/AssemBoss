@@ -218,9 +218,9 @@ public class Player : MonoBehaviour {
 	}
 	#endregion
 	#region DAMAGE
-	public void Damage(int amount, Direction dir)
+	public bool Damage(int amount, Direction dir)
 	{
-		if(IsInvincible()) return; //Do nothing on invincible
+		if(IsInvincible()) return false; //Do nothing on invincible
 
 		health.Decrease(amount);
 		MakeInvincible(cdbInv); //Make player invincible
@@ -228,6 +228,7 @@ public class Player : MonoBehaviour {
 		mgJump.ForceJump(cdbStunJump); //Stun jump
 		mgLevel.RemovePlayerHealth(amount);
 		mgAttack.DisruptCombo();
+		return true;
 	}
 
 	public void OnDeath()

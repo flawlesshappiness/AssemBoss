@@ -53,6 +53,7 @@ public class PanelEditAttack : MonoBehaviour {
 		kvSpawner.SpawnText("Attack type:", da.type);
 		kvSpawner.SpawnInputField("Startup time:", InputField.ContentType.DecimalNumber, da.timeStart);
 		kvSpawner.SpawnInputField("Recovery time:", InputField.ContentType.DecimalNumber, da.timeEnd);
+		kvSpawner.SpawnToggle("Can be first attack:", da.firstAttack);
 
 		if(type == typeof(DataAttackJump))
 		{
@@ -67,11 +68,12 @@ public class PanelEditAttack : MonoBehaviour {
 		{
 			DataAttackShoot d = (DataAttackShoot)da;
 			kvSpawner.SpawnListButton("Projectile direction type:", M.GetListOfEnum(typeof(ProjectileDirection)), d.projectileDirection);
-			kvSpawner.SpawnSlider("Size:", 0.5f, 1.5f, d.scale);
+			kvSpawner.SpawnSlider("Amount:", 1, 50, d.projectileAmount);
+			kvSpawner.SpawnSlider("Size:", 0.05f, 0.5f, d.scale);
 			kvSpawner.SpawnSlider("Movement speed:", 0.01f, 0.2f, d.speedMove);
 			kvSpawner.SpawnSlider("Homing speed:", 0f, 2f, d.speedRotation);
-			kvSpawner.SpawnInputField("Projectile amount:", InputField.ContentType.IntegerNumber, d.projectileAmount);
 			kvSpawner.SpawnInputField("Spawn delay:", InputField.ContentType.DecimalNumber, d.spawnDelay);
+			kvSpawner.SpawnToggle("Turn towards player:", d.facePlayer);
 		}
 
 		//Load Next Attacks

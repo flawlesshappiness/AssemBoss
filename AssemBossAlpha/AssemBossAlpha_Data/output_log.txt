@@ -22,21 +22,17 @@ desktop: 1920x1080 60Hz; virtual: 3840x1080 at -1920,0
 <RI> Initializing input.
 <RI> Input initialized.
 <RI> Initialized touch support.
-UnloadTime: 1.035108 ms
+UnloadTime: 1.004389 ms
 Set control type: Keyboard
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Joystick connected ("Controller (Xbox 360 Wireless Receiver for Windows)").
- 
-(Filename:  Line: 1351)
 
 Set control type: XBox 360
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
 Setting up 4 worker threads for Enlighten.
-  Thread -> id: 2350 -> priority: 1 
-  Thread -> id: 2490 -> priority: 1 
-  Thread -> id: 14fc -> priority: 1 
-  Thread -> id: 1274 -> priority: 1 
+  Thread -> id: 21e8 -> priority: 1 
+  Thread -> id: 3b5c -> priority: 1 
+  Thread -> id: 2998 -> priority: 1 
+  Thread -> id: 1d54 -> priority: 1 

@@ -30,8 +30,8 @@ public class CollisionDamage : MonoBehaviour {
 		if(c.tag == "Player")
 		{
 			var p = c.GetComponent<Player>();
-			p.Damage(damage, GetHitDirection(c.transform.position));
-			onHitPlayer.Invoke();
+			bool hit = p.Damage(damage, GetHitDirection(c.transform.position));
+			if(hit) onHitPlayer.Invoke();
 		}
 		else if(c.tag == "Wall")
 		{

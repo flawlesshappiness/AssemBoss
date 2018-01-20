@@ -20,6 +20,7 @@ public class Boss : MonoBehaviour {
 	private bool enabled;
 	private new string name;
 
+	private List<BossAttack> firstAttacks = new List<BossAttack>();
 	private Dictionary<DataAttack, BossAttack> attacks = new Dictionary<DataAttack, BossAttack>();
 
 	//Awake
@@ -50,7 +51,7 @@ public class Boss : MonoBehaviour {
 	public void EnableBoss()
 	{
 		enabled = true;
-		GetRandomAttack().Enable();
+		GetRandomAttack(firstAttacks).Enable();
 	}
 
 	public void OnDamage()
@@ -71,7 +72,9 @@ public class Boss : MonoBehaviour {
 	#region ATTACKS
 	public void AddAttack(DataAttack da)
 	{
-		attacks.Add(da, da.AddComponent(gameObject));
+		var ba = da.AddComponent(gameObject);
+		attacks.Add(da, ba);
+		if(da.firstAttack.value) firstAttacks.Add(ba);
 	}
 
 	public BossAttack GetAttack(DataAttack da)
@@ -81,7 +84,12 @@ public class Boss : MonoBehaviour {
 
 	public BossAttack GetRandomAttack()
 	{
-		return attacks.Values.ToList()[Random.Range(0, attacks.Count)];
+		return GetRandomAttack(attacks.Values.ToList());
+	}
+
+	public BossAttack GetRandomAttack(List<BossAttack> list)
+	{
+		return list[Random.Range(0, list.Count)];
 	}
 	#endregion
 

@@ -25,10 +25,11 @@ public class LevelManager : MonoBehaviour {
 	private PrefabManager mgPrefab;
 	private ParticleManager mgParticle;
 	private Player player;
+	private DataBoss data;
 	private Boss boss;
 
 	private float cdEnd;
-	private float cdbEnd = 2f;
+	private float cdbEnd = 0.5f;
 	private bool fightEnd = false;
 
 	private float width;
@@ -51,7 +52,13 @@ public class LevelManager : MonoBehaviour {
 	void Update () {
 		if(state == State.SETUP)
 		{
-
+			if(Input.GetKeyDown(Controls.player_attack))
+			{
+				player.EnablePlayer(this, mgParticle);
+				boss.EnableBoss();
+				state = State.PLAYING;
+				panelGame.HideText();
+			}
 		}
 		else if(state == State.PLAYING)
 		{
@@ -59,10 +66,16 @@ public class LevelManager : MonoBehaviour {
 		}
 		else if(state == State.ENDING)
 		{
-			if(Time.time > cdEnd)
+			if(Time.time < cdEnd) return;
+			if(Input.GetKeyDown(Controls.player_attack))
 			{
-				StopLevel();
-				state = State.IDLE;
+				panelGame.HideText();
+				StartLevel(data);
+			}
+			else if(Input.GetKeyDown(Controls.player_jump))
+			{
+				panelGame.HideText();
+				mgPanel.Back();
 			}
 		}
 	}
@@ -73,6 +86,7 @@ public class LevelManager : MonoBehaviour {
 		fightEnd = false;
 
 		//Spawn boss
+		data = db;
 		boss = BuildBoss(db);
 		boss.transform.position = spawnBoss.position;
 
@@ -83,15 +97,10 @@ public class LevelManager : MonoBehaviour {
 		//UI
 		panelGame.SetHealthBoss(0, db.health.value, db.health.value);
 		panelGame.SetHealthPlayer(db.player.health.value);
-
-		//Enable
-		player.EnablePlayer(this, mgParticle);
-		boss.EnableBoss();
-
-		state = State.PLAYING;
+		panelGame.ShowDesc("Press ATTACK to start");
 	}
 
-	public void StopLevel()
+	public void ClearLevel()
 	{
 		Destroy(player.gameObject);
 		player = null;
@@ -99,16 +108,14 @@ public class LevelManager : MonoBehaviour {
 		Destroy(boss.gameObject);
 		boss = null;
 
-		state = State.IDLE;
-		panelGame.HideText();
-		mgPanel.Back();
+		foreach(Projectile p in GameObject.FindObjectsOfType<Projectile>()) Destroy(p.gameObject);
 	}
 
 	public void PlayerDeath()
 	{
 		if(!fightEnd)
 		{
-			panelGame.ShowText("DEFEAT");
+			panelGame.ShowTitle("DEFEAT");
 			End();
 		}
 	}
@@ -117,16 +124,18 @@ public class LevelManager : MonoBehaviour {
 	{
 		if(!fightEnd)
 		{
-			panelGame.ShowText("VICTORY");
+			panelGame.ShowTitle("VICTORY");
 			End();
 		}
 	}
 
 	void End()
 	{
+		ClearLevel();
 		fightEnd = true;
 		state = State.ENDING;
 		cdEnd = Time.time + cdbEnd;
+		panelGame.ShowDesc("Press JUMP to quit or ATTACK to retry");
 	}
 
 	Player BuildPlayer(DataPlayer d)
@@ -168,7 +177,8 @@ public class LevelManager : MonoBehaviour {
 
 	public void GiveUp()
 	{
-		StopLevel();
+		ClearLevel();
+		mgPanel.Back();
 	}
 
 	public Vector3 GetPlayerPosition()

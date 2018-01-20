@@ -54,14 +54,14 @@ public class PrefabManager : MonoBehaviour {
 		return g;
 	}
 
-	public GameObject SpawnSlider(float minVal, float maxVal, float val)
+	public GameObject SpawnSlider(float minVal, float maxVal, float val, bool wholeNumbers)
 	{
 		var g = SpawnPrefabUI("Slider");
 		var s = g.GetComponent<Slider>();
 		s.minValue = minVal;
 		s.maxValue = maxVal;
 		s.value = val;
-		s.wholeNumbers = false;
+		s.wholeNumbers = wholeNumbers;
 		return g;
 	}
 

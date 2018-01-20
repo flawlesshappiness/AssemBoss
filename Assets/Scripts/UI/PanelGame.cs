@@ -8,7 +8,8 @@ public class PanelGame : MonoBehaviour {
 
 	public Slider sliderHealthBoss;
 	public GameObject layoutHealthPlayer;
-	public Text textEnd;
+	public Text textTitle;
+	public Text textDesc;
 
 	//Help
 	public PrefabManager mgPrefab;
@@ -26,16 +27,33 @@ public class PanelGame : MonoBehaviour {
 		
 	}
 
-	#region END TEXT
-	public void ShowText(string text)
+	#region TEXT
+	public void ShowTitle(string text)
 	{
-		textEnd.text = text;
-		textEnd.color = Color.white;
+		textTitle.text = text;
+		textTitle.color = Color.white;
+	}
+
+	public void HideTitle()
+	{
+		textTitle.color = Color.clear;
+	}
+
+	public void ShowDesc(string text)
+	{
+		textDesc.text = text;
+		textDesc.color = Color.white;
+	}
+
+	public void HideDesc()
+	{
+		textDesc.color = Color.clear;
 	}
 
 	public void HideText()
 	{
-		textEnd.color = Color.clear;
+		HideTitle();
+		HideDesc();
 	}
 	#endregion
 	#region BOSS HEALTH
