@@ -6,16 +6,17 @@ using UnityEngine;
 [RequireComponent(typeof(MovementManager))]
 [RequireComponent(typeof(JumpManager))]
 [RequireComponent(typeof(AttackManager))]
-[RequireComponent(typeof(SpriteManager))]
 public class Player : MonoBehaviour {
+
+	public enum eGraphic { TENTACLE }
 
 	private ParticleManager mgParticle;
 	private LevelManager mgLevel;
-	private MovementManager mgMovement;
-	private JumpManager mgJump;
-	private AttackManager mgAttack;
-	private SpriteManager mgSprite;
-	private Health health;
+	public MovementManager mgMovement;
+	public JumpManager mgJump;
+	public AttackManager mgAttack;
+	public SpriteManager mgSprite;
+	public Health health;
 
 	private bool enabled;
 
@@ -31,7 +32,6 @@ public class Player : MonoBehaviour {
 	private float cdStun;
 	private float cdbStun; //Stun time
 	private float cdbStunJump; //Jump time while stunned
-	private Direction stunMoveDirection = Direction.NONE;
 
 	//Dash
 	private float cdDash;
@@ -45,14 +45,8 @@ public class Player : MonoBehaviour {
 	//Awake
 	void Awake()
 	{
-		mgMovement = GetComponent<MovementManager>();
-		mgJump = GetComponent<JumpManager>();
-		mgAttack = GetComponent<AttackManager>();
-		mgSprite = GetComponent<SpriteManager>();
-		health = GetComponent<Health>();
-
-		//Stun
-		cdbStun = cdbInv * 0.6f;
+		//Stuns
+		cdbStun = cdbInv * 0.25f;
 		cdbStunJump = cdbInv * 0.25f;
 
 		//Dash
@@ -85,22 +79,19 @@ public class Player : MonoBehaviour {
 	#region MOVEMENT
 	void Movement()
 	{
-		if(Stunned())
-		{
-			if(stunMoveDirection == Direction.RIGHT) mgMovement.MoveRight();
-			else if(stunMoveDirection == Direction.LEFT) mgMovement.MoveLeft();
-			return;
-		}
+		if(Stunned()) return;
 
 		switch(Controls.curControlType)
 		{
 		case Controls.controlType.XBOX360:
-			if(Input.GetAxis("Horizontal") > 0.5f) mgMovement.MoveRight();
-			else if(Input.GetAxis("Horizontal") < -0.5f) mgMovement.MoveLeft();
+			if(Input.GetAxis("Horizontal") > 0.5f) mgMovement.MoveDirection(DirectionHorizontal.RIGHT);
+			else if(Input.GetAxis("Horizontal") < -0.5f) mgMovement.MoveDirection(DirectionHorizontal.LEFT);
+			else mgMovement.MoveDirection(DirectionHorizontal.NONE);
 			break;
 		case Controls.controlType.KEYBOARD:
-			if(Input.GetKey(Controls.player_left)) mgMovement.MoveLeft();
-			else if(Input.GetKey(Controls.player_right)) mgMovement.MoveRight();
+			if(Input.GetKey(Controls.player_right)) mgMovement.MoveDirection(DirectionHorizontal.RIGHT);
+			else if(Input.GetKey(Controls.player_left)) mgMovement.MoveDirection(DirectionHorizontal.LEFT);
+			else mgMovement.MoveDirection(DirectionHorizontal.NONE);
 			break;
 		default:
 			break;
@@ -119,16 +110,20 @@ public class Player : MonoBehaviour {
 	void Attack()
 	{
 		if(Stunned()) return;
-		if(Input.GetKeyDown(Controls.player_attack))
+		if(Input.GetKeyDown(Controls.player_attack1))
 		{
-			mgAttack.Attack(GetAnalogDirection());
+			mgAttack.Attack(Controls.player_attack1, GetAnalogDirection());
+		}
+		else if(Input.GetKeyDown(Controls.player_attack2))
+		{
+			mgAttack.Attack(Controls.player_attack2, GetAnalogDirection());
 		}
 	}
 
 	Direction GetAnalogDirection()
 	{
 		float hor = Input.GetAxisRaw("Horizontal");
-		float ver = Input.GetAxis("Vertical");
+		float ver = Input.GetAxisRaw("Vertical");
 		float min = 0.5f;
 
 		if(ver > min) return Direction.UP;
@@ -194,10 +189,10 @@ public class Player : MonoBehaviour {
 		return Time.time < cdStun;
 	}
 
-	public void Stun(float time, Direction moveDirection)
+	public void Stun(float time, DirectionHorizontal moveDirection)
 	{
 		cdStun = Time.time + time;
-		stunMoveDirection = moveDirection;
+		if(moveDirection != DirectionHorizontal.NONE) mgMovement.ForceMove(moveDirection, time);
 	}
 	#endregion
 	#region INVINCIBLE
@@ -218,7 +213,7 @@ public class Player : MonoBehaviour {
 	}
 	#endregion
 	#region DAMAGE
-	public bool Damage(int amount, Direction dir)
+	public bool Damage(int amount, DirectionHorizontal dir)
 	{
 		if(IsInvincible()) return false; //Do nothing on invincible
 
@@ -227,7 +222,7 @@ public class Player : MonoBehaviour {
 		Stun(cdbStun, dir); //Stun player
 		mgJump.ForceJump(cdbStunJump); //Stun jump
 		mgLevel.RemovePlayerHealth(amount);
-		mgAttack.DisruptCombo();
+		mgAttack.DisruptAttack();
 		return true;
 	}
 

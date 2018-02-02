@@ -12,7 +12,7 @@ public class BossAttackJump : BossAttack {
 
 	private bool hasJumped = false;
 	private bool moving = false;
-	private Direction moveDir;
+	private DirectionHorizontal moveDir;
 
 	public override void Init ()
 	{
@@ -61,13 +61,11 @@ public class BossAttackJump : BossAttack {
 	{
 		if(approachToPlayer == Approach.TOWARDS) //Movement
 		{
-			if(moveDir == Direction.RIGHT) mgMovement.MoveRight();
-			else mgMovement.MoveLeft();
+			mgMovement.MoveDirection(moveDir);
 		}
 		else
 		{
-			if(moveDir == Direction.RIGHT) mgMovement.MoveLeft();
-			else mgMovement.MoveRight();
+			mgMovement.MoveDirection(E.Opposite(moveDir));
 		}
 	}
 

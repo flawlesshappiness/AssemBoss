@@ -7,40 +7,43 @@ public class AttackManager : MonoBehaviour {
 	private enum State { IDLE, STARTUP, ATTACKING, RECOVERY }
 	private State state = State.IDLE;
 
+	private enum AttackType { SLASH, STAB }
+
 	private Player player;
 	private MovementManager mgMovement;
 	private JumpManager mgJump;
 
+	public Animator animator;
 	private Direction attackDir;
 	private Collider2D attack;
-	public Collider2D attackRight;
-	public Collider2D attackLeft;
-	public Collider2D attackUp;
-	public Collider2D attackDown;
-	public Color cCombo1;
-	public Color cCombo2;
-	public Color cCombo3;
+	public Collider2D slashRight;
+	public Collider2D slashLeft;
+	public Collider2D slashUp;
+	public Collider2D slashDown;
+	public Collider2D stabRight;
+	public Collider2D stabLeft;
+	public Collider2D stabUp;
+	public Collider2D stabDown;
 
 	private int damage = 1;
+	private bool holdAttack; //Has pressed attack button
+	private bool hasHit = true;
 
+	//Cooldowns
+	private float cdWait; //General cooldown timer
 	private float cdAttack;
 	private float cdbAttack = 0.05f; //Time attack is active
 	private float cdbAttackFinal = 0.3f; //Time before final attack in combo
-	private float cdbRecovery = 0.1f; //Recovery cooldown
+	private float cdbRecovery = 0.2f; //Recovery cooldown
 	private float cdbRecoveryFinal = 0.3f; //Recovery cooldown after final attack in combo
-
-	private bool hasHit = true;
-
-	private float cdWait; //General cooldown timer
-	private bool holdAttack; //Has pressed attack button
-
-	//Combo
-	private int comboCur = 0;
 	private float cdCombo;
 	private float cdbCombo; //Cooldown before combo resets
 
+	//Animation
+	private bool attackAnimRight = true;
+	private string attackAnim = "";
+
 	//Power tokens
-	private bool tokenHit = false;
 	private int tokens = 0;
 
 	//Awake
@@ -71,32 +74,13 @@ public class AttackManager : MonoBehaviour {
 		}
 		else if(state == State.STARTUP)
 		{
-			IncreaseCombo();
-			if(comboCur == 1)
-			{
-				damage = 1;
-				attack.GetComponent<SpriteRenderer>().color = cCombo1;
-				cdWait = Time.time;
-			}
-			else if(comboCur == 2)
-			{
-				damage = 1;
-				attack.GetComponent<SpriteRenderer>().color = cCombo2;
-				cdWait = Time.time;
-			}
-			else if(comboCur == 3)
-			{
-				damage = 2;
-				attack.GetComponent<SpriteRenderer>().color = cCombo3;
-				tokenHit = true;
-				cdWait = Time.time + cdbAttackFinal;
-				player.Stun(cdbAttackFinal, Direction.NONE);
-				mgJump.SetFloating(true);
-			}
+			damage = 1;
+			cdWait = Time.time;
 			SetState(State.ATTACKING);
 		}
 		else if(state == State.ATTACKING)
 		{
+			animator.SetTrigger(attackAnim);
 			hasHit = false;
 			attack.gameObject.SetActive(true);
 			SetState(State.RECOVERY);
@@ -104,29 +88,78 @@ public class AttackManager : MonoBehaviour {
 		}
 		else if(state == State.RECOVERY)
 		{
+			animator.SetTrigger("idle");
+
 			if(mgJump.IsFloating()) mgJump.SetFloating(false);
 			hasHit = false;
 			holdAttack = false;
 			if(attack != null) attack.gameObject.SetActive(false);
 			attack = null;
 			SetState(State.IDLE);
-			cdWait = (tokenHit) ? Time.time + cdbRecoveryFinal : Time.time + cdbRecovery;
-			tokenHit = false;
+			cdWait = Time.time + cdbRecovery;
 		}
 	}
 
-	public void Attack(Direction dir)
+	public void Attack(KeyCode button, Direction dir)
 	{
 		holdAttack = true;
 
 		if(state != State.IDLE) return;
-		if(dir == Direction.RIGHT) attack = attackRight;
-		else if(dir == Direction.LEFT) attack = attackLeft;
-		else if(dir == Direction.UP) attack = attackUp;
-		else if(dir == Direction.DOWN && mgJump.GetState() != JumpManager.JumpState.GROUNDED) attack = attackDown;
-		else attack = (mgMovement.GetCurrentDirection() == Direction.RIGHT) ? attackRight : attackLeft;
+		attackDir = (dir == Direction.NONE) ? E.ToDirection(mgMovement.GetCurrentDirection()) : dir;
+		AttackType type = (button == Controls.player_attack2) ? AttackType.STAB : AttackType.SLASH;
+		attack = GetAttack(type, attackDir);
+		attackAnim = GetAttackAnim(type, dir);
+		attackAnimRight = !attackAnimRight;
+	}
 
-		attackDir = (dir == Direction.NONE) ? mgMovement.GetCurrentDirection() : dir;
+	Collider2D GetAttack(AttackType type, Direction dir)
+	{
+		if(type == AttackType.SLASH)
+		{
+			switch(dir)
+			{
+			case Direction.RIGHT: return slashRight;
+			case Direction.LEFT: return slashLeft;
+			case Direction.UP: return slashUp;
+			case Direction.DOWN: 
+				if(mgJump.GetState() == JumpManager.JumpState.GROUNDED) return GetAttack(type, E.ToDirection(mgMovement.GetCurrentDirection()));
+				else return slashDown;
+			}
+		}
+		else if(type == AttackType.STAB)
+		{
+			switch(dir)
+			{
+			case Direction.RIGHT: return stabRight;
+			case Direction.LEFT: return stabLeft;
+			case Direction.UP: return stabUp;
+			case Direction.DOWN: 
+				if(mgJump.GetState() == JumpManager.JumpState.GROUNDED) return GetAttack(type, E.ToDirection(mgMovement.GetCurrentDirection()));
+				else return stabDown;
+			}
+		}
+
+		return null;
+	}
+
+	string GetAttackAnim(AttackType type, Direction dir)
+	{
+		string s = type.ToString().ToLower();
+		switch(dir)
+		{
+		case Direction.RIGHT: s += "_side_";
+			break;
+		case Direction.LEFT: s += "_side_";
+			break;
+		case Direction.UP: s += "_side_";
+			break;
+		case Direction.DOWN: s += "_side_";
+			break;
+		default: s += "_side_";
+			break;
+		}
+		s += attackAnimRight ? "r" : "l";
+		return s;
 	}
 
 	void CheckAttack()
@@ -144,34 +177,27 @@ public class AttackManager : MonoBehaviour {
 		foreach(Collider2D c in cols)
 		{
 			if(c.isTrigger && c.tag == "Enemy") {
-				c.GetComponent<Health>().Decrease(damage);
-				if(attackDir == Direction.DOWN)
-				{
-					mgJump.ForceJump(0.25f); //Pogo
-					player.ResetDash();
-				}
+				OnHitEnemy(c.gameObject);
 			}
 		}
 		hasHit = true;
-		if(tokenHit) tokens++;
 	}
 
-	public void DisruptCombo()
+	void OnHitEnemy(GameObject enemy)
+	{
+		enemy.GetComponent<Health>().Decrease(damage);
+		if(attackDir == Direction.DOWN)
+		{
+			mgJump.ForceJump(0.25f); //Pogo
+			player.ResetDash();
+		}
+		else if(attackDir == Direction.RIGHT) mgMovement.ForceMove(DirectionHorizontal.LEFT, 0.2f);
+		else if(attackDir == Direction.LEFT) mgMovement.ForceMove(DirectionHorizontal.RIGHT, 0.2f);
+	}
+
+	public void DisruptAttack()
 	{
 		SetState(State.RECOVERY);
-	}
-
-	void SetCombo(int amount)
-	{
-		comboCur = amount;
-		if(comboCur > 3) comboCur = 1;
-	}
-
-	void IncreaseCombo()
-	{
-		if(Time.time > cdCombo) SetCombo(1);
-		else SetCombo(comboCur + 1);
-		cdCombo = Time.time + cdbCombo;
 	}
 
 	void SetState(State state)

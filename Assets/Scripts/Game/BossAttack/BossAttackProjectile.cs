@@ -133,7 +133,7 @@ public class BossAttackProjectile : BossAttack {
 		public override void Spawn ()
 		{
 			var p = CreateProjectile();
-			float startAngle = (boss.mgMovement.GetCurrentDirection() == Direction.RIGHT) ? 0f : 180f;
+			float startAngle = (boss.mgMovement.GetCurrentDirection() == DirectionHorizontal.RIGHT) ? 0f : 180f;
 			float angle = ((circleState+1) * anglePerProjectile);
 			RotateProjectile(p.transform, startAngle + angle);
 			FireProjectile(p);
@@ -158,7 +158,7 @@ public class BossAttackProjectile : BossAttack {
 		public override void Spawn ()
 		{
 			var p = CreateProjectile();
-			var dir = (boss.mgMovement.GetCurrentDirection() == Direction.RIGHT);
+			var dir = (boss.mgMovement.GetCurrentDirection() == DirectionHorizontal.RIGHT);
 			float startAngle = dir ? 0f : 180f;
 			float angleMult = dir ? 1f : -1f;
 			float angle = ((circleState+1) * anglePerProjectile) * angleMult;
@@ -185,7 +185,7 @@ public class BossAttackProjectile : BossAttack {
 		public override void Spawn ()
 		{
 			var p = CreateProjectile();
-			var dir = (boss.mgMovement.GetCurrentDirection() == Direction.RIGHT);
+			var dir = (boss.mgMovement.GetCurrentDirection() == DirectionHorizontal.RIGHT);
 			float startAngle = dir ? 0f : 180f;
 			float angleMult = dir ? -1f : 1f;
 			float angle = ((circleState+1) * anglePerProjectile) * angleMult;
@@ -213,7 +213,7 @@ public class BossAttackProjectile : BossAttack {
 		{
 			var p = CreateProjectile();
 			float startAngle = 90f;
-			float angleMult = (boss.mgMovement.GetCurrentDirection() == Direction.RIGHT) ? -1f : 1f;
+			float angleMult = (boss.mgMovement.GetCurrentDirection() == DirectionHorizontal.RIGHT) ? -1f : 1f;
 			float angle = ((circleState+1) * anglePerProjectile) * angleMult;
 			RotateProjectile(p.transform, startAngle + angle);
 			FireProjectile(p);
@@ -232,7 +232,7 @@ public class BossAttackProjectile : BossAttack {
 		public override void Spawn ()
 		{
 			var p = CreateProjectile();
-			if(boss.mgMovement.GetCurrentDirection() == Direction.LEFT) RotateProjectile(p.transform, 180f);
+			if(boss.mgMovement.GetCurrentDirection() == DirectionHorizontal.LEFT) RotateProjectile(p.transform, 180f);
 			FireProjectile(p);
 		}
 	}

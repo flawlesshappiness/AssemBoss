@@ -92,6 +92,7 @@ public class DataBoss : DataObject {
 
 [Serializable]
 public class DataPlayer {
+	public DataValue<string> graphic = new DataValue<string>(Player.eGraphic.TENTACLE.ToString());
 	public DataValue<int> health = new DataValue<int>(5);
 }
 

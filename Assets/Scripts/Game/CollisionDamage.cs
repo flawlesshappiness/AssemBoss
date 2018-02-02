@@ -44,10 +44,10 @@ public class CollisionDamage : MonoBehaviour {
 		
 	}
 
-	Direction GetHitDirection(Vector3 oPos)
+	DirectionHorizontal GetHitDirection(Vector3 oPos)
 	{
 		var pos = transform.position;
-		if(oPos.x > pos.x) return Direction.RIGHT;
-		else return Direction.LEFT;
+		if(oPos.x > pos.x) return DirectionHorizontal.RIGHT;
+		else return DirectionHorizontal.LEFT;
 	}
 }

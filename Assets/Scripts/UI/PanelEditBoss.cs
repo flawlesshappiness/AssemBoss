@@ -69,6 +69,7 @@ public class PanelEditBoss : MonoBehaviour {
 		kvSpawner.SpawnInputField("Name:", InputField.ContentType.Standard, boss.name);
 		kvSpawner.SpawnInputField("Boss health:", InputField.ContentType.IntegerNumber, boss.health);
 		kvSpawner.SpawnSlider("Size multiplier:", 0.5f, 3f, boss.sizeMult);
+		kvSpawner.SpawnListButton("Graphic", M.GetListOfEnum(typeof(Player.eGraphic)), boss.player.graphic);
 		kvSpawner.SpawnInputField("Player health:", InputField.ContentType.IntegerNumber, boss.player.health);
 	}
 

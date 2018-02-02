@@ -51,7 +51,7 @@ public class Boss : MonoBehaviour {
 	public void EnableBoss()
 	{
 		enabled = true;
-		GetRandomAttack(firstAttacks).Enable();
+		if(firstAttacks.Count > 0) GetRandomAttack(firstAttacks).Enable();
 	}
 
 	public void OnDamage()
@@ -98,11 +98,11 @@ public class Boss : MonoBehaviour {
 		return mgLevel.GetPlayer();
 	}
 
-	public Direction GetDirectionToPlayer()
+	public DirectionHorizontal GetDirectionToPlayer()
 	{
 		var ppos = mgLevel.GetPlayerPosition();
 		var pos = transform.position;
-		return (ppos.x > pos.x) ? Direction.RIGHT : Direction.LEFT;
+		return (ppos.x > pos.x) ? DirectionHorizontal.RIGHT : DirectionHorizontal.LEFT;
 	}
 
 	public void FacePlayer(bool towards)
@@ -114,7 +114,7 @@ public class Boss : MonoBehaviour {
 		}
 		else
 		{
-			if(mgMovement.GetCurrentDirection() == d) mgMovement.MoveOppositeDirection(d);
+			if(mgMovement.GetCurrentDirection() == d) mgMovement.MoveDirection(E.Opposite(d));
 		}
 	}
 }

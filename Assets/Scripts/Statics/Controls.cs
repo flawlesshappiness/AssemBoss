@@ -12,7 +12,8 @@ public class Controls : MonoBehaviour {
 	public static KeyCode player_down;
 
 	public static KeyCode player_jump;
-	public static KeyCode player_attack;
+	public static KeyCode player_attack1;
+	public static KeyCode player_attack2;
 	public static KeyCode player_dodge;
 
 	//Controls
@@ -37,6 +38,7 @@ public class Controls : MonoBehaviour {
 		KeyCode.J,
 		KeyCode.K,
 		KeyCode.L,
+		KeyCode.I,
 	};
 
 	// Use this for initialization
@@ -50,7 +52,8 @@ public class Controls : MonoBehaviour {
 		curControlType = controlType.XBOX360;
 
 		player_jump = KeyCode.JoystickButton0;
-		player_attack = KeyCode.JoystickButton2;
+		player_attack1 = KeyCode.JoystickButton2;
+		player_attack2 = KeyCode.JoystickButton1;
 		player_dodge = KeyCode.JoystickButton10;
 	}
 
@@ -64,8 +67,9 @@ public class Controls : MonoBehaviour {
 		player_up = KeyCode.W;
 		player_down = KeyCode.S;
 
-		player_attack = KeyCode.J;
-		player_jump = KeyCode.K;
+		player_attack1 = KeyCode.J;
+		player_attack2 = KeyCode.K;
+		player_jump = KeyCode.I;
 		player_dodge = KeyCode.L;
 	}
 

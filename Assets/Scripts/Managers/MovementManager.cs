@@ -6,19 +6,24 @@ public class MovementManager : MonoBehaviour {
 
 	public float moveSpeed;
 	private float speed;
-	private SpriteRenderer ren;
+	private DirectionHorizontal moveDir;
 
+	public SpriteRenderer ren;
 	public Transform mainTrans;
 	public Collider2D rightCollider;
 	public Collider2D leftCollider;
 
 	private bool facingRight = true;
+	private bool moveDirLocked = false;
+	private bool flipLocked = false;
+
+	private float cdMoveDirLocked;
+	private float cdFlipLocked;
 
 	//Awake
 	void Awake()
 	{
 		speed = moveSpeed;
-		ren = GetComponent<SpriteRenderer>();
 	}
 
 	// Use this for initialization
@@ -28,29 +33,27 @@ public class MovementManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
+		if(moveDir == DirectionHorizontal.RIGHT) MoveRight(!flipLocked); //Move right
+		else if(moveDir == DirectionHorizontal.LEFT) MoveLeft(!flipLocked); //Move left
+
+		if(Time.time > cdMoveDirLocked) moveDirLocked = false; //Disable move direction lock
+		if(Time.time > cdFlipLocked) flipLocked = false; //Disable flip lock
 	}
 
-	public void MoveDirection(Direction d)
+	public void MoveDirection(DirectionHorizontal d)
 	{
-		if(d == Direction.RIGHT) MoveRight();
-		else if(d == Direction.LEFT) MoveLeft();
+		if(moveDirLocked) return;
+		moveDir = d;
 	}
 
-	public void MoveOppositeDirection(Direction d)
-	{
-		if(d == Direction.RIGHT) MoveLeft();
-		else if(d == Direction.LEFT) MoveRight();
+	void MoveRight(bool flip){
+		if(!facingRight && flip) Flip();
+		else if(!HasWall(DirectionHorizontal.RIGHT)) Move(speed);
 	}
 
-	public void MoveRight(){
-		if(!facingRight) Flip();
-		else if(!IsFacingWall()) Move(speed);
-	}
-
-	public void MoveLeft(){
-		if(facingRight) Flip();
-		else if(!IsFacingWall()) Move(-speed);
+	void MoveLeft(bool flip){
+		if(facingRight && flip) Flip();
+		else if(!HasWall(DirectionHorizontal.LEFT)) Move(-speed);
 	}
 
 	void Move(float x){
@@ -62,25 +65,35 @@ public class MovementManager : MonoBehaviour {
 		facingRight = !facingRight;
 	}
 
-	bool IsFacingWall()
+	public void ForceMove(DirectionHorizontal dir, float time)
 	{
-		Collider2D[] cols = null;
-		var dir = GetCurrentDirection();
-		if(dir == Direction.RIGHT) cols = Physics2D.OverlapBoxAll(rightCollider.transform.position, rightCollider.bounds.size, 0f);
-		if(dir == Direction.LEFT) cols = Physics2D.OverlapBoxAll(leftCollider.transform.position, leftCollider.bounds.size, 0f);
-		foreach(Collider2D c in cols)
-		{
-			if(c.transform != transform && !c.isTrigger) {
-				return true;
-			}
-		}
-
-		return false;
+		float t = Time.time + time;
+		moveDirLocked = true;
+		flipLocked = true;
+		cdMoveDirLocked = t;
+		cdFlipLocked = t;
+		moveDir = dir;
 	}
 
-	public Direction GetCurrentDirection()
+	bool HasWall(DirectionHorizontal dir)
 	{
-		return (facingRight) ? Direction.RIGHT : Direction.LEFT;
+		Collider2D[] cols = null; //Array of collisions
+		if(facingRight) cols = GetCollisions(dir); //If facing right, get collisions to direction
+		else cols = GetCollisions(E.Opposite(dir)); //If facing left, get collisions of opposite direction
+		foreach(Collider2D c in cols) if(c.transform != transform && !c.isTrigger) return true; //If collision is not me and not a trigger, it's a wall
+		return false; //No collisions
+	}
+
+	Collider2D[] GetCollisions(DirectionHorizontal dir)
+	{
+		if(dir == DirectionHorizontal.RIGHT) return Physics2D.OverlapBoxAll(rightCollider.transform.position, rightCollider.bounds.size, 0f);
+		else if(dir == DirectionHorizontal.LEFT) return Physics2D.OverlapBoxAll(leftCollider.transform.position, leftCollider.bounds.size, 0f);
+		else return new Collider2D[0];
+	}
+
+	public DirectionHorizontal GetCurrentDirection()
+	{
+		return (facingRight) ? DirectionHorizontal.RIGHT : DirectionHorizontal.LEFT;
 	}
 
 	public void ResetSpeed()

@@ -52,7 +52,7 @@ public class LevelManager : MonoBehaviour {
 	void Update () {
 		if(state == State.SETUP)
 		{
-			if(Input.GetKeyDown(Controls.player_attack))
+			if(Input.GetKeyDown(Controls.player_attack1))
 			{
 				player.EnablePlayer(this, mgParticle);
 				boss.EnableBoss();
@@ -67,7 +67,7 @@ public class LevelManager : MonoBehaviour {
 		else if(state == State.ENDING)
 		{
 			if(Time.time < cdEnd) return;
-			if(Input.GetKeyDown(Controls.player_attack))
+			if(Input.GetKeyDown(Controls.player_attack1))
 			{
 				panelGame.HideText();
 				StartLevel(data);
@@ -97,7 +97,7 @@ public class LevelManager : MonoBehaviour {
 		//UI
 		panelGame.SetHealthBoss(0, db.health.value, db.health.value);
 		panelGame.SetHealthPlayer(db.player.health.value);
-		panelGame.ShowDesc("Press ATTACK to start");
+		panelGame.ShowDesc("Press SLASH to start");
 	}
 
 	public void ClearLevel()
@@ -135,12 +135,12 @@ public class LevelManager : MonoBehaviour {
 		fightEnd = true;
 		state = State.ENDING;
 		cdEnd = Time.time + cdbEnd;
-		panelGame.ShowDesc("Press JUMP to quit or ATTACK to retry");
+		panelGame.ShowDesc("Press JUMP to quit or SLASH to retry");
 	}
 
 	Player BuildPlayer(DataPlayer d)
 	{
-		var g = mgPrefab.SpawnPrefabGame("Player");
+		var g = mgPrefab.SpawnPrefabGame("Players/" + d.graphic.value);
 		var p = g.GetComponent<Player>();
 
 		//Health

@@ -17,7 +17,7 @@ public class JumpManager : MonoBehaviour {
 	//Speeds
 	public float fallSpeed = 0.2f;
 	public float jumpSpeed = 0.1f;
-	public float jumpToFallSpeed = 0.01f;
+	public float jumpToFallSpeed = 0.001f;
 	private float curSpeed;
 
 	//Cooldowns
@@ -26,6 +26,7 @@ public class JumpManager : MonoBehaviour {
 
 	//Jump
 	private bool holdingJump = false;
+	private bool jumpDisabledUntilGrounded = false;
 	private float jumpEnd; //Time when jump will end
 
 	//Event
@@ -48,8 +49,20 @@ public class JumpManager : MonoBehaviour {
 		}
 		else if(state == JumpState.JUMPING)
 		{
-			if(holdingJump && Time.time < jumpEnd) MoveUp();
-			else state = JumpState.FALLING;
+			if(holdingJump)
+			{
+				if(Time.time < jumpEnd) MoveUp();
+				else 
+				{
+					if(jumpDisabledUntilGrounded) curSpeed = 0f;
+					state = JumpState.FALLING;
+				}
+			}
+			else
+			{
+				state = JumpState.FALLING;
+				curSpeed = 0f;
+			}
 		}
 		else if(state == JumpState.FALLING)
 		{
@@ -57,6 +70,7 @@ public class JumpManager : MonoBehaviour {
 			{
 				onGrounded.Invoke();
 				state = JumpState.GROUNDED;
+				jumpDisabledUntilGrounded = false;
 			}
 			else Fall();
 		}
@@ -64,6 +78,7 @@ public class JumpManager : MonoBehaviour {
 
 	public void HoldJump(bool holding)
 	{
+		if(jumpDisabledUntilGrounded) return;
 		holdingJump = holding;
 	}
 
@@ -117,8 +132,11 @@ public class JumpManager : MonoBehaviour {
 	{
 		curSpeed = jumpSpeed;
 		jumpEnd = Time.time + jumpTime;
-		HoldJump(true);
 		state = JumpState.JUMPING;
+
+		jumpDisabledUntilGrounded = false;
+		HoldJump(true);
+		jumpDisabledUntilGrounded = true;
 	}
 
 	public JumpState GetState()
